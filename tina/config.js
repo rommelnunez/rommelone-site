@@ -72,6 +72,12 @@ export default defineConfig({
             description: "The project's short description",
           },
           {
+            type: "string",
+            name: "embed_code",
+            label: "Embed Code",
+            description: "If a video project, attach the embed code.",
+          },
+          {
             type: "number",
             name: "year",
             label: "Year",
@@ -397,6 +403,10 @@ export default defineConfig({
                       {
                         value: "Overpass Mono",
                         label: "Overpass Mono"
+                      },
+                      {
+                        value: "Libre Franklin",
+                        label: "Libre Franklin"
                       },
                       {
                         value: "Public Sans",
