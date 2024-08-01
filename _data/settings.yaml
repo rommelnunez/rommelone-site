@@ -51,7 +51,7 @@ theme:
     show_project_grid_titles: true
 images:
   avif:
-    enabled: true
+    enabled: false
     quality: 75
   webp:
     enabled: true
