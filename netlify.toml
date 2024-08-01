@@ -48,4 +48,4 @@ package = "netlify-plugin-11ty"
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self' https://player.vimeo.com; frame-src https://player.vimeo.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+    Content-Security-Policy = "default-src 'self' https://player.vimeo.com; frame-src https://player.vimeo.com;"
