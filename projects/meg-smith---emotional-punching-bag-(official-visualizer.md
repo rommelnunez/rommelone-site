@@ -1,0 +1,21 @@
+---
+draft: false
+title: Meg Smith - Emotional Punching Bag (Official Visualizer)
+description: |
+  PRODCER / DP / EDITOR
+embed_code: >-
+  <div style="padding:75% 0 0 0;position:relative;"><iframe
+  src="https://player.vimeo.com/video/850047134?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
+  clipboard-write"
+  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Meg
+  Smith - Emotional Punching Bag (Official Visualizer)"></iframe></div><script
+  src="https://player.vimeo.com/api/player.js"></script>
+year: 2023
+images:
+  - src: /assets/uploads/thumb (6).jpg
+date: 2024-07-31T21:01:11.947Z
+position: 3
+---
+
+Shot, Cut, Colored, and Produced in New York.
