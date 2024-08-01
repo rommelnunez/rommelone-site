@@ -13,10 +13,10 @@ metadata:
   site_url: 'http://localhost:8080/'
   site_title: ROMMEL
   site_subtitle_1: ''
-  site_subtitle_2: 'New York, NY'
+  site_subtitle_2: NY / LA
   site_description: >
     Producer / Director / Photographer / Editor / Creative Director and
-    co-founder @ Baxtop.
+    co-founder @ [Baxtop](https://baxtop.agency).
   site_email: rommel@baxtop.agency
   site_social_url: 'https://instagram.com/its.rommel'
   site_icon_svg: /assets/uploads/favicon.svg
@@ -30,7 +30,7 @@ metadata:
     no_index: false
 theme:
   theme_layout:
-    space_scale: 100
+    space_scale: 50
   theme_colors:
     background: '#ffffff'
     text: '#101010'
@@ -46,7 +46,7 @@ theme:
   theme_features:
     enable_dark_mode: true
     item_output_limit: 48
-    transition_duration: 300
+    transition_duration: 600
     show_project_year: true
     show_project_grid_titles: true
 images:
@@ -58,9 +58,6 @@ images:
     quality: 75
   jpeg:
     enabled: true
-    quality: 75
-  gif:
-    enabled: true 
     quality: 75
 i18n:
   site_language: en
