@@ -10,7 +10,7 @@ config:
     Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"
 metadata:
-  site_url: 'https://rommelnunez.github.io/rommelone-site'
+  site_url: 'https://rommelnunez.github.io'
   site_title: ROMMEL
   site_subtitle_1: ''
   site_subtitle_2: NY / LA
