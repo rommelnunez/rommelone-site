@@ -6,7 +6,8 @@
     "build": "eleventy",
     "watch": "npx @11ty/eleventy --watch",
     "serve": "npx @11ty/eleventy --serve",
-    "debug": "DEBUG=* npx @11ty/eleventy"
+    "debug": "DEBUG=* npx @11ty/eleventy",
+    "deploy": "npm run build && gh-pages -d _site"
   },
   "repository": {
     "type": "git",
