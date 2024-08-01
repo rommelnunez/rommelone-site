@@ -3,10 +3,11 @@
   "version": "0.0.1",
   "description": "Halide is a new, minimalist, responsive portfolio website designed for photographers and still image creators",
   "scripts": {
-    "build": "eleventy",
-    "watch": "npx @11ty/eleventy --watch",
-    "serve": "npx @11ty/eleventy --serve",
-    "debug": "DEBUG=* npx @11ty/eleventy"
+    "build": "npx eleventy",
+    "serve": "npx eleventy --serve",
+    "debug": "DEBUG=* npx eleventy",
+    "test": "jest",
+    "build": "env NODE_ENV=production npx eleventy --pathprefix 'eleventy-gh-demo'",
   },
   "repository": {
     "type": "git",
