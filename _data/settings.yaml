@@ -25,7 +25,8 @@ metadata:
   seo:
     site_title: ROMMEL
     site_description: >-
-      Producer / Director / Photographer / Editor / Creative Director and co-founder @ Baxtop.
+      Producer / Director / Photographer / Editor / Creative Director and
+      co-founder @ Baxtop.
     no_index: false
 theme:
   theme_layout:
@@ -39,7 +40,7 @@ theme:
     link_dark: '#FFFFFF'
   theme_typography:
     font: Libre Franklin
-    font_weight: 500
+    font_weight: 600
     font_scale: 100
     line_height_scale: 100
   theme_features:
