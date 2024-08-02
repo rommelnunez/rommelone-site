@@ -44,8 +44,3 @@ package = "netlify-plugin-11ty"
   # optional, deploy the lighthouse report to a path under your site
   [plugins.inputs.audits]
     output_path = "reports/lighthouse/index.html"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Content-Security-Policy = "default-src 'self' https://player.vimeo.com; frame-src https://player.vimeo.com;"
