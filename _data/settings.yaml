@@ -40,7 +40,7 @@ theme:
     link_dark: '#FFFFFF'
   theme_typography:
     font: Libre Franklin
-    font_weight: 600
+    font_weight: 500
     font_scale: 100
     line_height_scale: 100
   theme_features:
