@@ -31,11 +31,12 @@ package = "netlify-plugin-11ty"
 
   [plugins.inputs.policies]
     defaultSrc = "'self' https://player.vimeo.com"
-    styleSrc = "'self'"
-    scriptSrc = "'self' www.google-analytics.com www.googletagmanager.com https://player.vimeo.com"
+    styleSrc = "'self' 'unsafe-inline'"
+    scriptSrc = "'self' 'unsafe-inline' www.google-analytics.com www.googletagmanager.com https://player.vimeo.com"
     fontSrc = "'self' data: fonts.gstatic.com"
     imgSrc = "'self' www.google-analytics.com assets.tina.io"
     connectSrc = "www.google-analytics.com identity.tinajs.io content.tinajs.io assets.tinajs.io"
+    frameSrc = "https://player.vimeo.com"
     frameAncestors = "'none'"
 
 [[plugins]]
