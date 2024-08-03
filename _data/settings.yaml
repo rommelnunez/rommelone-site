@@ -36,8 +36,8 @@ theme:
     text: '#101010'
     link: '#D0021B'
     background_dark: '#101010'
-    text_dark: '#E1E1E1'
-    link_dark: '#FFFFFF'
+    text_dark: '#FFFFFF'
+    link_dark: '#D0021B'
   theme_typography:
     font: Libre Franklin
     font_weight: 500
