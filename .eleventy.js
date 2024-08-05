@@ -213,9 +213,19 @@ module.exports = function(eleventyConfig) {
     return new CleanCSS({}).minify(fontCss).styles;
   
   });
+  eleventyConfig.addNunjucksAsyncShortcode("svgIcon", async filename => {
+    const metadata = await Image(`_includes/assets/logos/${filename}`, {
+      formats: ["svg"],
+      dryRun: true,
+    })
+    return metadata.svg[0].buffer.toString()
+  });
 
   // Copy folders or static assets e.g. images to site output
   eleventyConfig.addPassthroughCopy({"assets/icons/favicon.svg" : "/favicon.svg"});
+
+  // Copy the entire logos folder
+  eleventyConfig.addPassthroughCopy("_includes/assets/logos");
 
   // Disable 11ty dev server live reload when using CMS locally
   eleventyConfig.setServerOptions({

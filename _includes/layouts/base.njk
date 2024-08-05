@@ -4,10 +4,10 @@
 	{% include "components/head.njk" %}
 
 	<body class="grid grid--body">
-
 		{% include "components/header.njk" %}
-
+		
 		<main class="p--2 pb--8">
+
 			{# The main page/template content #}
 			{{ layoutContent | safe }}
 		</main>
@@ -34,5 +34,5 @@
 		{% endif %}
 
 	</body>
-
+{% include "components/carousel.njk" %}
 </html>
