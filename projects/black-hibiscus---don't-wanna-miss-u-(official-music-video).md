@@ -13,6 +13,7 @@ embed_code: >-
   src="https://player.vimeo.com/api/player.js"></script>
 year: 2024
 images:
+  - src: /assets/uploads/stilldwmy_1.1.1.png
   - src: /assets/uploads/stilldwmy_1.1.7.png
   - src: /assets/uploads/stilldwmy_1.1.3.png
   - src: /assets/uploads/stilldwmy_1.1.2.png
