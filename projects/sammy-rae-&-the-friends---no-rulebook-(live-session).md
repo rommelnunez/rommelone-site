@@ -14,6 +14,7 @@ embed_code: >-
 year: 2024
 images:
   - src: /assets/uploads/sammyraestills1.png
+  - src: /assets/uploads/sammyraestills_1.13.1.png
 date: 2024-10-02T15:28:41.488Z
 position: 0
 ---
