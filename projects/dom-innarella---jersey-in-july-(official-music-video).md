@@ -12,6 +12,10 @@ embed_code: >-
   Innarella - Jersey In July"></iframe></div><script
   src="https://player.vimeo.com/api/player.js"></script>
 year: 2025
+images:
+  - src: /assets/uploads/lillie_rosemary_1751041614_3664325104549126188_3645407.jpg
+  - src: /assets/uploads/lillie_rosemary_1751041614_3664325104549099131_3645407.jpg
+  - src: /assets/uploads/lillie_rosemary_1751041614_3664325104557409229_3645407.jpg
 date: 2025-07-10T14:43:23.028Z
 position: 0
 ---
