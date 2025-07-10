@@ -20,7 +20,7 @@ images:
   - src: /assets/uploads/guitarcenter_1.12.1.jpg
   - src: /assets/uploads/guitarcenter_1.6.1.jpg
 date: 2024-07-31T20:02:20.125Z
-position: 2
+position: 5
 ---
 
 Director, Producer & DP: Rommel Nunez
