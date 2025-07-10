@@ -21,7 +21,7 @@ images:
   - src: /assets/uploads/Untitled_1.2.5.jpg
   - src: /assets/uploads/Untitled_1.2.6.jpg
 date: 2024-07-31T17:30:54.310Z
-position: 0
+position: 1
 ---
 
 Production Company: Baxtop Agency
