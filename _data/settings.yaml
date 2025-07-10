@@ -12,8 +12,8 @@ config:
 metadata:
   site_url: 'https://rommel.mov'
   site_title: ROMMEL
-  site_subtitle_1: ''
-  site_subtitle_2: NY / LA
+  site_subtitle_1: Film & Video Producer/Director.
+  site_subtitle_2: 'New York, NY'
   site_description: >
     Producer / Director / Photographer / Editor / Creative Director and
     co-founder @ [Baxtop](https://baxtop.agency).
@@ -23,7 +23,7 @@ metadata:
   site_icon_png: /assets/uploads/sig_black.PNG
   site_ga4_id: ''
   seo:
-    site_title: ROMMEL 
+    site_title: ROMMEL
     site_description: >-
       Producer / Director / Photographer / Editor / Creative Director and
       co-founder @ Baxtop.
