@@ -22,6 +22,14 @@
 							{% endif %}
 						{% endfor %}
 
+						{# If no images exist but project has Mux embed code, use Mux thumbnail #}
+						{% if not image.src and project.data.embed_code %}
+							{% set muxThumb = project.data.embed_code | getMuxThumbnail %}
+							{% if muxThumb %}
+								{% set image = { "src": muxThumb, "caption": project.data.title } %}
+							{% endif %}
+						{% endif %}
+
 						{# Make an array of the enabled image formats from settings.yaml #}
 						{% set outputFormats = [] %}
 						{% for format, i in settings.images %}

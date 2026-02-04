@@ -10,38 +10,50 @@ const Image = require("@11ty/eleventy-img");
 const MarkdownIt = require("markdown-it");
 const mdRender = new MarkdownIt();
 
-module.exports = function(eleventyConfig) {
+module.exports = function (eleventyConfig) {
 
-  eleventyConfig.addFilter("renderUsingMarkdown", function(rawString) {
+  eleventyConfig.addFilter("renderUsingMarkdown", function (rawString) {
     return mdRender.render(rawString);
   });
 
+  // Extract Mux playback ID from embed code and return thumbnail URL
+  eleventyConfig.addFilter("getMuxThumbnail", function (embedCode) {
+    if (!embedCode) return null;
+    // Match Mux player URL pattern: player.mux.com/{PLAYBACK_ID}
+    const match = embedCode.match(/player\.mux\.com\/([a-zA-Z0-9]+)/);
+    if (match && match[1]) {
+      return `https://image.mux.com/${match[1]}/thumbnail.jpg`;
+    }
+    return null;
+  });
+
+
   // https://www.11ty.dev/docs/plugins/image/
   // Generate PNG icon files and a link tag from a source SVG or PNG file
-  eleventyConfig.addShortcode("favicon", async function(src) {
+  eleventyConfig.addShortcode("favicon", async function (src) {
 
     // Remove preceding slash from image path if it exists
     src = src.startsWith("/") ? src.slice(1) : src;
 
-		let metadata = await Image(src, {
-			widths: [48,192,512],
-			formats: ["png"],
+    let metadata = await Image(src, {
+      widths: [48, 192, 512],
+      formats: ["png"],
       urlPath: "/",
       outputDir: "./_site/",
       filenameFormat: function (id, src, width, format, options) {
-		    const name = "favicon";
+        const name = "favicon";
         return `${name}-${width}.${format}`;
       }
-		});
+    });
 
     // Build the icon link tag
     let data = metadata.png[0];
-		return `<link rel="icon" href="${data.url}" type="image/png">`;
+    return `<link rel="icon" href="${data.url}" type="image/png">`;
 
-	});
+  });
 
   // Shortcode to generate a responsive project image
-  eleventyConfig.addShortcode("generateImage", async function(params) {
+  eleventyConfig.addShortcode("generateImage", async function (params) {
 
     // Destructure the paramaters object and set some defaults
     let {
@@ -50,7 +62,7 @@ module.exports = function(eleventyConfig) {
       classes = "",
       loadingType = "lazy",
       viewportSizes = "",
-      outputWidths = ["1080","1800","2400"],
+      outputWidths = ["1080", "1800", "2400"],
       outputFormats = ["jpeg"],
       outputQualityJpeg = 75,
       outputQualityWebp = 75,
@@ -92,8 +104,8 @@ module.exports = function(eleventyConfig) {
 
     return `<picture class="${classes}" data-orientation="${orientation}">
 			${Object.values(metadata).map(imageFormat => {
-				return `  <source type="${imageFormat[0].sourceType}" srcset="${imageFormat.map(entry => entry.srcset).join(", ")}" sizes="${viewportSizes}">`;
-			}).join("\n")}
+      return `  <source type="${imageFormat[0].sourceType}" srcset="${imageFormat.map(entry => entry.srcset).join(", ")}" sizes="${viewportSizes}">`;
+    }).join("\n")}
 				<img
 					src="${lowsrc.url}"
 					width="${lowsrc.width}"
@@ -103,7 +115,7 @@ module.exports = function(eleventyConfig) {
 					loading="${loadingType}"
 					decoding="async">
 			  </picture>`;
-  
+
   });
 
   // Add 11ty helmet plugin, for appending elements to <head>
@@ -116,7 +128,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.setDataDeepMerge(true);
 
   // The projects collection, sorted by the numerical position value and then by date
-  eleventyConfig.addCollection("projects", function(collectionApi) {
+  eleventyConfig.addCollection("projects", function (collectionApi) {
     return collectionApi.getFilteredByGlob("projects/*.md")
       //.filter(project => !Boolean(project.data.draft))
       .sort((a, b) => b.data.position - a.data.position);
@@ -140,24 +152,24 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("formatGoogleFontName", name => {
     return name.replace(/\s/g, '+');
   });
-  
+
   // Date formatting (human readable)
   eleventyConfig.addFilter("dateFullYear", dateObj => {
     return DateTime.fromJSDate(dateObj).toFormat("yyyy");
   });
 
   // base64 encode a string
-  eleventyConfig.addFilter("encodeURL", function(url) {
+  eleventyConfig.addFilter("encodeURL", function (url) {
     return encodeURIComponent(url);
   });
 
   // Minify CSS
-  eleventyConfig.addFilter("cssmin", function(code) {
+  eleventyConfig.addFilter("cssmin", function (code) {
     return new CleanCSS({}).minify(code).styles;
   });
 
   // Minify JS
-  eleventyConfig.addFilter("jsmin", function(code) {
+  eleventyConfig.addFilter("jsmin", function (code) {
     let minified = UglifyJS.minify(code);
     if (minified.error) {
       console.log("UglifyJS error: ", minified.error);
@@ -167,7 +179,7 @@ module.exports = function(eleventyConfig) {
   });
 
   // Minify HTML output
-  eleventyConfig.addTransform("htmlmin", function(content, outputPath) {
+  eleventyConfig.addTransform("htmlmin", function (content, outputPath) {
     if (outputPath.indexOf(".html") > -1) {
       let minified = htmlmin.minify(content, {
         useShortDoctype: true,
@@ -185,7 +197,7 @@ module.exports = function(eleventyConfig) {
   });
 
   // Universal slug filter makes-strict-urls-like-this
-  eleventyConfig.addFilter("slug", function(str) {
+  eleventyConfig.addFilter("slug", function (str) {
     return slugify(str, {
       lower: true,
       replacement: "-",
@@ -195,7 +207,7 @@ module.exports = function(eleventyConfig) {
 
   // Shortcode to download, cache, and minify Google Fonts CSS to reduce HTTP requests on the front-end
   // TODO Consider downloading the font file itself and storing in the build cache
-  eleventyConfig.addShortcode("googleFontsCss", async function(url) {
+  eleventyConfig.addShortcode("googleFontsCss", async function (url) {
 
     let fontCss = await EleventyFetch(url, {
       duration: "1d",
@@ -211,7 +223,7 @@ module.exports = function(eleventyConfig) {
 
     //return fontCss;
     return new CleanCSS({}).minify(fontCss).styles;
-  
+
   });
   eleventyConfig.addNunjucksAsyncShortcode("svgIcon", async filename => {
     const metadata = await Image(`_includes/assets/logos/${filename}`, {
@@ -222,7 +234,7 @@ module.exports = function(eleventyConfig) {
   });
 
   // Copy folders or static assets e.g. images to site output
-  eleventyConfig.addPassthroughCopy({"assets/icons/favicon.svg" : "/favicon.svg"});
+  eleventyConfig.addPassthroughCopy({ "assets/icons/favicon.svg": "/favicon.svg" });
 
   // Copy the entire logos folder
   eleventyConfig.addPassthroughCopy("_includes/assets/logos");
