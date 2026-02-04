@@ -87,6 +87,7 @@ export default defineConfig({
             type: "object",
             name: "images",
             label: "Images",
+            description: "Optional. If not provided for video projects, a thumbnail will be auto-generated from the video source.",
             list: true,
             ui: {
               itemProps: (item) => {

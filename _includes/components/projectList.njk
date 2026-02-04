@@ -5,7 +5,7 @@
 
 		{% for project in projectList | reverse %}
 
-			<div class="columns__item mb--1">
+			<div class="columns__item mb--1" data-type="{% if project.data.embed_code %}videos{% else %}photos{% endif %}">
 
 				<a href="{{ project.url | url }}">
 
@@ -78,3 +78,34 @@
 	</section>
 
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const filterLinks = document.querySelectorAll('.filter-link');
+  const projectItems = document.querySelectorAll('.columns__item');
+  
+  filterLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const filter = this.dataset.filter;
+      
+      // Update active state
+      filterLinks.forEach(l => l.style.fontWeight = 'normal');
+      this.style.fontWeight = 'bold';
+      
+      // Filter projects
+      projectItems.forEach(item => {
+        if (filter === 'all') {
+          item.style.display = '';
+        } else {
+          const projectType = item.dataset.type;
+          item.style.display = projectType === filter ? '' : 'none';
+        }
+      });
+    });
+  });
+  
+  // Set initial active state
+  document.querySelector('[data-filter="all"]').style.fontWeight = 'bold';
+});
+</script>

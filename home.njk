@@ -15,6 +15,18 @@ permalink: "/index.html"
 
   </header>
 
+  <nav class="pb--2">
+    <div class="grid">
+      <div class="grid__item--span-4 text--small" style="display: flex; gap: 1rem;">
+        <a href="#" data-filter="all" class="filter-link" style="text-decoration: none;">ALL</a>
+        <span>|</span>
+        <a href="#" data-filter="videos" class="filter-link" style="text-decoration: none;">VIDEOS</a>
+        <span>|</span>
+        <a href="#" data-filter="photos" class="filter-link" style="text-decoration: none;">PHOTOS</a>
+      </div>
+    </div>
+  </nav>
+
   {% set projectList = collections.projects | limit(settings.theme.theme_features.item_output_limit or 48) %}
   {% include "components/projectList.njk" %}
 

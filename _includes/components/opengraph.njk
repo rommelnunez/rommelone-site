@@ -9,5 +9,13 @@
 <meta property="og:type" content="website" data-helmet>
 <meta property="og:site_name" content="{{ settings.metadata.site_title }}" data-helmet>
 
+{% if page.url == "/" %}
+  <meta property="og:image" content="{{ settings.metadata.site_url }}/assets/uploads/stilldwmy_1.1.5.png" data-helmet>
+{% elif images and images[0] %}
+  <meta property="og:image" content="{{ settings.metadata.site_url }}{{ images[0].src }}" data-helmet>
+{% else %}
+  <meta property="og:image" content="{{ settings.metadata.site_url }}/assets/uploads/stilldwmy_1.1.5.png" data-helmet>
+{% endif %}
+
 {% set pageURL = settings.metadata.site_url + page.url %}
 <meta property="og:url" content="{{ pageURL }}" data-helmet>
