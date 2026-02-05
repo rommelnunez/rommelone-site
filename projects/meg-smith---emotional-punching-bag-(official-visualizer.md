@@ -1,5 +1,5 @@
 ---
-draft: true
+draft: false
 title: Meg Smith - Emotional Punching Bag (Official Visualizer)
 description: |
   PRODCER / DP / EDITOR

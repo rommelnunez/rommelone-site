@@ -1,5 +1,5 @@
 ---
-draft: true
+draft: false
 title: Meg Smith - Guitar Center (Official Music Video)
 description: |
   DIRECTOR / PRODUCER / DP

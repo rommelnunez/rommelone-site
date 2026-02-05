@@ -1,5 +1,5 @@
 ---
-draft: true
+draft: false
 title: Google Women Techmakers (Short Form)
 description: |
   EDITOR
