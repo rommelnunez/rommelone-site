@@ -34,12 +34,12 @@ export default defineConfig({
         path: "projects",
         format: "md",
         // set some default values for this collection
-				defaultItem: () => {
-					return {
+        defaultItem: () => {
+          return {
             draft: false,
-						date: new Date().toISOString(),
-					}
-				},
+            date: new Date().toISOString(),
+          }
+        },
         ui: {
           filename: {
             readonly: false,
@@ -87,7 +87,7 @@ export default defineConfig({
             type: "object",
             name: "images",
             label: "Images",
-            description: "Optional. If not provided for video projects, a thumbnail will be auto-generated from the video source.",
+            description: "The project's images",
             list: true,
             ui: {
               itemProps: (item) => {
@@ -115,10 +115,10 @@ export default defineConfig({
             label: "Publish Date",
             description: "The published date or today's date (for internal use only)",
             ui: {
-							dateFormat: 'YYYY-MM-DD',
-							timeFormat: 'HH:MM:SS',
+              dateFormat: 'YYYY-MM-DD',
+              timeFormat: 'HH:MM:SS',
               component: "hidden",
-						}
+            }
           },
           {
             type: "object",
@@ -157,9 +157,9 @@ export default defineConfig({
             name: "position",
             label: "Project Position",
             description: "Adjust this project's position in the project list, as a number between 0 and 999. A lower value pushes the position up.",
-            ui:{
-              validate: (val)=>{
-                if (val < 0 || val >= 1000 ) {
+            ui: {
+              validate: (val) => {
+                if (val < 0 || val >= 1000) {
                   return "The number must be between 0 and 999"
                 }
               },
@@ -518,9 +518,9 @@ export default defineConfig({
                     name: "quality",
                     label: "AVIF Image Quality",
                     description: "Controls AVIF image compression, from 1-100. A lower value means smaller file sizes but lower image quality. Default: 80",
-                    ui:{
-                      validate: (val)=>{
-                        if (val < 1 || val >= 101 ) {
+                    ui: {
+                      validate: (val) => {
+                        if (val < 1 || val >= 101) {
                           return "The value must be between 1 and 100"
                         }
                       },
@@ -544,9 +544,9 @@ export default defineConfig({
                     name: "quality",
                     label: "WebP Image Quality",
                     description: "Controls WebP image compression, from 1-100. A lower value means smaller file sizes but lower image quality. Default: 80",
-                    ui:{
-                      validate: (val)=>{
-                        if (val < 1 || val >= 101 ) {
+                    ui: {
+                      validate: (val) => {
+                        if (val < 1 || val >= 101) {
                           return "The value must be between 1 and 100"
                         }
                       },
@@ -573,9 +573,9 @@ export default defineConfig({
                     name: "quality",
                     label: "JPEG Image Quality",
                     description: "Controls JPEG image compression, from 1-100. A lower value means smaller file sizes but lower image quality. Default: 80",
-                    ui:{
-                      validate: (val)=>{
-                        if (val < 1 || val >= 101 ) {
+                    ui: {
+                      validate: (val) => {
+                        if (val < 1 || val >= 101) {
                           return "The value must be between 1 and 100"
                         }
                       },
