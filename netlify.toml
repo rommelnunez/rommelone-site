@@ -6,7 +6,7 @@
 # Output directory and build command
 [build]
   publish = "_site"
-  command = "npx tinacms build && eleventy"
+  command = "npx tinacms build --skip-cloud-checks && eleventy"
 
 # Cache generated content between builds (e.g. images)
 [[plugins]]
