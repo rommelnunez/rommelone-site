@@ -13,12 +13,12 @@ export default defineConfig({
 
   build: {
     outputFolder: "admin",
-    publicFolder: "_site",
+    publicFolder: "public",
   },
   media: {
     tina: {
       mediaRoot: "assets/uploads",
-      publicFolder: ".",
+      publicFolder: "public",
     },
   },
   search: {
@@ -76,9 +76,9 @@ export default defineConfig({
           },
           {
             type: "string",
-            name: "embed_code",
-            label: "Embed Code",
-            description: "If a video project, attach the embed code.",
+            name: "mux_playback_id",
+            label: "Mux Playback ID",
+            description: "The Mux playback ID for this video project. Find it in your Mux dashboard.",
           },
           {
             type: "number",
@@ -110,6 +110,23 @@ export default defineConfig({
                 label: "Caption",
                 description: "Add a descriptive image caption, used for the image alt text",
               },
+            ],
+          },
+          {
+            type: "string",
+            name: "project_type",
+            label: "Project Type",
+            description: "What type of project is this? Displayed as a label on the slideshow.",
+            options: [
+              { value: "music-video", label: "Music Video" },
+              { value: "live-session", label: "Live Session" },
+              { value: "visualizer", label: "Visualizer" },
+              { value: "commercial", label: "Commercial" },
+              { value: "narrative", label: "Narrative" },
+              { value: "documentary", label: "Documentary" },
+              { value: "editorial", label: "Editorial" },
+              { value: "short-film", label: "Short Film" },
+              { value: "other", label: "Other" },
             ],
           },
           {
@@ -399,6 +416,10 @@ export default defineConfig({
                       {
                         value: "Fraunces",
                         label: "Fraunces"
+                      },
+                      {
+                        value: "Geist",
+                        label: "Geist"
                       },
                       {
                         value: "Inter",

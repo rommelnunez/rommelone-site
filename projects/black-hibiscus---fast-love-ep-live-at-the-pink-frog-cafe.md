@@ -3,14 +3,8 @@ draft: false
 title: Black Hibiscus - FAST LOVE EP Live at The Pink Frog Cafe
 description: |
   PRODUCER / EDITOR
-embed_code: >-
-  <div style="padding:56.25% 0 0 0;position:relative;"><iframe
-  src="https://player.vimeo.com/video/903767820?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
-  clipboard-write"
-  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Black
-  Hibiscus - FAST LOVE EP LIVE"></iframe></div><script
-  src="https://player.vimeo.com/api/player.js"></script>
+mux_playback_id: 1JYJgwkWgaj3kXQp3s3a7JAXc6XKixKUHkdbVxcu8aM
+project_type: live-session
 year: 2024
 images:
   - src: /assets/uploads/thumnails-fll_1.69.1 2.PNG

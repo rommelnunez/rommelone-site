@@ -1,16 +1,10 @@
 ---
-draft: false
-title: Eva Westphal - Proud of Me (Official Music Video)
+draft: true
+title: Eva Westphal - Proud of Me
 description: |
   DIRECTOR / PRODUCER / EDITOR
-embed_code: >-
-  <div style="padding:75% 0 0 0;position:relative;"><iframe
-  src="https://player.vimeo.com/video/830330487?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
-  clipboard-write"
-  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Eva
-  Westphal - Proud of Me"></iframe></div><script
-  src="https://player.vimeo.com/api/player.js"></script>
+mux_playback_id: aOu8DHr01y2i6Fy1i00M8tBmjGck65tv12H4BCXqi9x4o
+project_type: music-video
 year: 2023
 images:
   - src: /assets/uploads/stills_1.1.1.jpg

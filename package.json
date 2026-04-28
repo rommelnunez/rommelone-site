@@ -1,43 +1,35 @@
 {
   "name": "halide",
-  "version": "0.0.1",
-  "description": "Halide is a new, minimalist, responsive portfolio website designed for photographers and still image creators",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ROMMEL - Portfolio",
   "scripts": {
-    "serve": "npx eleventy --serve",
-    "debug": "DEBUG=* npx eleventy",
-    "test": "jest",
-    "build": "env NODE_ENV=production npx eleventy --pathprefix 'rommelone-site'"
+    "dev": "tinacms dev -c \"next dev --turbopack\"",
+    "build": "tinacms build && next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/danurbanowicz/halide"
-  },
-  "author": {
-    "name": "Dan Urbanowicz",
-    "email": "dan.urbanowicz@gmail.com",
-    "url": "https://github.com/danurbanowicz"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/danurbanowicz/halide/issues"
-  },
-  "homepage": "https://github.com/danurbanowicz/halide",
-  "devDependencies": {
-    "@11ty/eleventy": "^2.0.1",
-    "@11ty/eleventy-fetch": "^4.0.1",
-    "@11ty/eleventy-img": "^4.0.2",
-    "@netlify/plugin-lighthouse": "^3.0.0",
-    "@tinacms/cli": "^1.5.26",
-    "clean-css": "^5.3.3",
-    "dotenv": "^16.4.5",
-    "eleventy-plugin-helmet": "^0.2.2",
-    "gh-pages": "^6.1.1",
-    "html-minifier": "^4.0.0",
+  "dependencies": {
+    "@mux/mux-player-react": "^3.12.0",
+    "geist": "^1.3.1",
+    "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.0",
-    "markdown-it": "^14.1.0",
-    "netlify-plugin-11ty": "^1.4.0",
-    "netlify-plugin-csp-generator": "^1.6.1",
+    "next": "^15.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1",
+    "slugify": "^1.6.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.5",
+    "@tinacms/cli": "^1.5.26",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "tailwindcss": "^4.1.5",
     "tinacms": "^2.1.0",
-    "uglify-js": "^3.17.4"
+    "typescript": "^5.8.3"
   }
 }

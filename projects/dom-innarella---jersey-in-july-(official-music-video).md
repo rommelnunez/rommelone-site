@@ -1,9 +1,10 @@
 ---
 draft: false
-title: Dom Innarella - Jersey In July (Official Music Video)
+title: Dom Innarella - Jersey In July
 description: |
   PRODUCER
 embed_code: "<iframe   src=\"https://player.mux.com/02mojKy8D44jM49LIMVcuUgg1m2K5uEsrQ8JsegoLFaA?metadata-video-title=dom_innarella_-_jersey_in_july+%282160p%29&video-title=dom_innarella_-_jersey_in_july+%282160p%29\"   style=\"width: 100%; border: none; aspect-ratio: 193/135;\"   allow=\"accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;\"   allowfullscreen ></iframe>\L"
+project_type: music-video
 year: 2025
 images:
   - src: /assets/uploads/lillie_rosemary_1751041614_3664325104549126188_3645407.jpg

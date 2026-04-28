@@ -1,16 +1,10 @@
 ---
 draft: false
-title: Rachel Bochner - Angel Numbers (Official Visualizer)
+title: Rachel Bochner - Angel Numbers
 description: |
   CO-DIRECTOR / PRODUCER / EDITOR
-embed_code: >-
-  <div style="padding:75% 0 0 0;position:relative;"><iframe
-  src="https://player.vimeo.com/video/993113089?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
-  clipboard-write"
-  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Rachel
-  Bochner - Angel Numbers (Official Visualizer)"></iframe></div><script
-  src="https://player.vimeo.com/api/player.js"></script>
+mux_playback_id: UPgDUbpdaDhHFsAi1C7oxvSV6daORs01PXgR6NrFPgqw
+project_type: visualizer
 year: 2024
 images:
   - src: /assets/uploads/angelnumbers_1.20.1.jpg

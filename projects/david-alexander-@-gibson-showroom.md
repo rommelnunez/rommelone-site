@@ -3,6 +3,7 @@ draft: false
 title: David Alexander @ Gibson Showroom
 description: |
   PHOTOGRAPHER
+project_type: live-session
 year: 2023
 images:
   - src: /assets/uploads/David Alexander - 6-2-23-116.jpg

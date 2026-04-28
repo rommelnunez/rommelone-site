@@ -1,16 +1,10 @@
 ---
 draft: false
-title: 'Mark Ambor - Hair Toss, Arms Crossed (Live Session)'
+title: 'Mark Ambor - Hair Toss, Arms Crossed'
 description: |
   DP / EDITOR
-embed_code: >-
-  <div style="padding:75% 0 0 0;position:relative;"><iframe
-  src="https://player.vimeo.com/video/774651309?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
-  clipboard-write"
-  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Mark
-  Ambor - Hair Toss, Arms Crossed (Live Session)"></iframe></div><script
-  src="https://player.vimeo.com/api/player.js"></script>
+mux_playback_id: 2I5wBMs9tQ5j4qQCkKjdETxgPb8QFuWE020100rkoQ5I88
+project_type: live-session
 year: 2022
 images:
   - src: /assets/uploads/thumb (5).jpg

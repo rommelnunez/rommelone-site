@@ -1,16 +1,10 @@
 ---
 draft: false
-title: 'Black Hibiscus - YOU, ME AND HER (Official Music Video)'
+title: 'Black Hibiscus - YOU, ME AND HER'
 description: |
   DIRECTOR / EDITOR /PRODUCER
-embed_code: >-
-  <div style="padding:56.25% 0 0 0;position:relative;"><iframe
-  src="https://player.vimeo.com/video/891702247?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
-  clipboard-write"
-  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="BLACK
-  HIBISCUS - YOU, ME, AND HER"></iframe></div><script
-  src="https://player.vimeo.com/api/player.js"></script>
+mux_playback_id: UgmDCmBfi02kZN7CQXb1014VvvTsn1CKKVrCbXUMP3fwI
+project_type: music-video
 year: 2023
 images:
   - src: /assets/uploads/MV thumbnail_1.1.2.png

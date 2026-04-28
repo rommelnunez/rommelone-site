@@ -39,7 +39,7 @@ theme:
     text_dark: '#FFFFFF'
     link_dark: '#D0021B'
   theme_typography:
-    font: Libre Franklin
+    font: Geist
     font_weight: 500
     font_scale: 100
     line_height_scale: 100

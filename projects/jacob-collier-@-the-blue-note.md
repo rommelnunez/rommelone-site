@@ -3,6 +3,7 @@ draft: false
 title: Jacob Collier and Chris Thile @ The Blue Note
 description: |
   PHOTOGRAPHER
+project_type: live-session
 year: 2022
 images:
   - src: /assets/uploads/Jacob-Collier-Blue-Note-32.jpg

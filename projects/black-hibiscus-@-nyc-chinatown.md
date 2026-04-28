@@ -1,8 +1,9 @@
 ---
-draft: false
+draft: true
 title: Black Hibiscus @ NYC Chinatown
 description: |
   PHOTOGRAPHER
+project_type: live-session
 year: 2023
 images:
   - src: /assets/uploads/Black Hibiscus in Chinatown-3.jpg

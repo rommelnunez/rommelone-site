@@ -1,16 +1,10 @@
 ---
 draft: false
-title: Rachel Bochner - Alchemical (Official Music Video)
+title: Rachel Bochner - Alchemical
 description: |
   CO-DIRECTOR / PRODUCER / CO-EDITOR
-embed_code: >-
-  <div style="padding:35.63% 0 0 0;position:relative;"><iframe
-  src="https://player.vimeo.com/video/981696043?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-  frameborder="0" allow="autoplay; fullscreen; picture-in-picture;
-  clipboard-write"
-  style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Rachel
-  Bochner - Alchemical (Official Music Video)"></iframe></div><script
-  src="https://player.vimeo.com/api/player.js"></script>
+mux_playback_id: VEWamH6jcGdfLPp00lk00AGEILnc3bAAqUmAO9XiVwIC00
+project_type: music-video
 year: 2024
 images:
   - src: /assets/uploads/Untitled_1.1.2.jpg
