@@ -5,7 +5,8 @@
   "description": "ROMMEL - Portfolio",
   "scripts": {
     "dev": "tinacms dev -c \"next dev --turbopack\"",
-    "build": "tinacms build && next build",
+    "build": "next build",
+    "build:tina": "tinacms build && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -23,13 +24,13 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.5",
-    "@tinacms/cli": "^1.5.26",
+    "@tinacms/cli": "^2.2.4",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "tailwindcss": "^4.1.5",
-    "tinacms": "^2.1.0",
+    "tinacms": "^3.7.4",
     "typescript": "^5.8.3"
   }
 }
