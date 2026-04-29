@@ -2,11 +2,11 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
 import SlideVideoPreview from "./SlideVideoPreview";
 import PhotoDrawer from "./PhotoDrawer";
+import FocusViewModal from "./FocusViewModal";
 
 type MediaFilter = "film" | "photography";
 
@@ -33,7 +33,7 @@ export default function ProjectSlideshow({
   projects,
   siteTitle,
 }: ProjectSlideshowProps) {
-  const router = useRouter();
+  const [focusedProject, setFocusedProject] = useState<Project | null>(null);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("film");
   const [filmCategory, setFilmCategory] = useState<FilmCategory>("all");
   const [photoCategory, setPhotoCategory] = useState<PhotoCategory>("all");
@@ -157,15 +157,24 @@ export default function ProjectSlideshow({
     const container = containerRef.current;
     if (!container) return;
 
-    const onWheel = (e: WheelEvent) => {
-      // Let the photo drawer scroll naturally
-      if (mediaFilter === "photography") return;
+    let accumulated = 0;
+    let decayTimer: ReturnType<typeof setTimeout> | null = null;
+    const THRESHOLD = 50; // px of scroll delta needed to trigger advance
 
+    const onWheel = (e: WheelEvent) => {
+      if (mediaFilter === "photography") return;
       e.preventDefault();
       if (locked.current) return;
 
-      const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0;
-      if (dir === 0) return;
+      // Accumulate scroll delta and decay it after inactivity
+      accumulated += e.deltaY;
+      if (decayTimer) clearTimeout(decayTimer);
+      decayTimer = setTimeout(() => { accumulated = 0; }, 200);
+
+      if (Math.abs(accumulated) < THRESHOLD) return;
+
+      const dir = accumulated > 0 ? 1 : -1;
+      accumulated = 0;
 
       const next = activeIndexRef.current + dir;
       if (next < 0 || next >= filteredLenRef.current) return;
@@ -223,7 +232,7 @@ export default function ProjectSlideshow({
     if (isPhotos) return;
     const current = filmProjects[activeIndex];
     if (current) {
-      router.push(`/project/${current.slug}`);
+      setFocusedProject(current);
     }
   };
 
@@ -237,165 +246,166 @@ export default function ProjectSlideshow({
     s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
-    <div
-      ref={containerRef}
-      className={`fixed inset-0 w-full h-full select-none ${isPhotos ? "overflow-y-auto cursor-default" : "overflow-hidden cursor-none"}`}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-      onMouseMove={onMouseMove}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      {/* Custom play cursor — only in film mode */}
-      {!isPhotos && cursorVisible && !cursorOverUI && (
-        <div
-          className="fixed z-50 pointer-events-none"
-          style={{
-            left: cursorPos.x,
-            top: cursorPos.y,
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <div className="w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
-            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" className="ml-0.5">
-              <path d="M0 0L18 10L0 20V0Z" fill="white" fillOpacity="0.9" />
-            </svg>
-          </div>
-        </div>
-      )}
-
-      {/* Background slides — always rendered, shrinks when photos open */}
+    <>
       <div
-        className="relative w-full transition-all duration-700 ease-in-out"
-        style={{ height: isPhotos ? "0" : "100vh" }}
+        ref={containerRef}
+        className={`fixed inset-0 w-full h-full select-none ${isPhotos ? "overflow-y-auto cursor-default" : "overflow-hidden cursor-none"}`}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onMouseMove={onMouseMove}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
       >
-        {filmProjects.map((project, i) => {
-          const thumb = getThumbnail(project);
-          if (!thumb) return null;
-          const isActive = i === activeIndex;
-          const showVideo = AUTOPLAY_PREVIEW && isActive && project.muxPlaybackId && !isPhotos;
-
-          return (
-            <div
-              key={project.slug}
-              className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out"
-              style={{
-                opacity: isActive ? 1 : 0,
-                zIndex: isActive ? 1 : 0,
-              }}
-            >
-              <Image
-                src={thumb}
-                alt={project.title}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority={i <= 1}
-                unoptimized
-              />
-              {showVideo && <SlideVideoPreview playbackId={project.muxPlaybackId!} startTime={AUTOPLAY_START_SECONDS} onPlaybackStarted={scheduleAutoAdvance} />}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
-            </div>
-          );
-        })}
-
-        {/* Slide overlay — title + click area (film mode only) */}
-        {!isPhotos && (
+        {/* Custom play cursor — only in film mode */}
+        {!isPhotos && cursorVisible && !cursorOverUI && (
           <div
-            className="absolute inset-0 z-10 flex flex-col cursor-none"
-            onClick={handleSlideClick}
+            className="fixed z-50 pointer-events-none"
+            style={{
+              left: cursorPos.x,
+              top: cursorPos.y,
+              transform: "translate(-50%, -50%)",
+            }}
           >
-            <div className="flex-1" />
-            {current && (
-              <div style={{ padding: `0 ${EDGE_PAD}px`, maxWidth: "50vw" }}>
-                <h1 className="text-[clamp(1.8rem,4vw,3.75rem)] font-light leading-[1.05] tracking-[-0.02em] text-white/40 italic font-extralight">
-                  {current.title}
-                </h1>
-              </div>
-            )}
-            <div className="flex-1" />
+            <div className="w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
+              <svg width="18" height="20" viewBox="0 0 18 20" fill="none" className="ml-0.5">
+                <path d="M0 0L18 10L0 20V0Z" fill="white" fillOpacity="0.9" />
+              </svg>
+            </div>
           </div>
         )}
 
-        {/* Dot navigation (film mode only) */}
-        {!isPhotos && filmProjects.length > 1 && (
-          <div
-            className="absolute top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2"
-            style={{ right: EDGE_PAD, cursor: "pointer" }}
-            onMouseEnter={() => setCursorOverUI(true)}
-            onMouseLeave={() => setCursorOverUI(false)}
-          >
-            {filmProjects.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                className={`
+        {/* Background slides — always rendered, shrinks when photos open */}
+        <div
+          className="relative w-full transition-all duration-700 ease-in-out"
+          style={{ height: isPhotos ? "0" : "100vh" }}
+        >
+          {filmProjects.map((project, i) => {
+            const thumb = getThumbnail(project);
+            if (!thumb) return null;
+            const isActive = i === activeIndex;
+            const showVideo = AUTOPLAY_PREVIEW && isActive && project.muxPlaybackId && !isPhotos;
+
+            return (
+              <div
+                key={project.slug}
+                className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out"
+                style={{
+                  opacity: isActive ? 1 : 0,
+                  zIndex: isActive ? 1 : 0,
+                }}
+              >
+                <Image
+                  src={thumb}
+                  alt={project.title}
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                  priority={i <= 1}
+                  unoptimized
+                />
+                {showVideo && <SlideVideoPreview playbackId={project.muxPlaybackId!} startTime={AUTOPLAY_START_SECONDS} onPlaybackStarted={scheduleAutoAdvance} />}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+              </div>
+            );
+          })}
+
+          {/* Slide overlay — title + click area (film mode only) */}
+          {!isPhotos && (
+            <div
+              className="absolute inset-0 z-10 flex flex-col cursor-none"
+              onClick={handleSlideClick}
+            >
+              <div className="flex-1" />
+              {current && (
+                <div style={{ padding: `0 ${EDGE_PAD}px`, maxWidth: "50vw" }}>
+                  <h1 className="text-[clamp(1.8rem,4vw,3.75rem)] font-light leading-[1.05] tracking-[-0.02em] text-white/40 italic font-extralight">
+                    {current.title}
+                  </h1>
+                </div>
+              )}
+              <div className="flex-1" />
+            </div>
+          )}
+
+          {/* Dot navigation (film mode only) */}
+          {!isPhotos && filmProjects.length > 1 && (
+            <div
+              className="absolute top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2"
+              style={{ right: EDGE_PAD, cursor: "pointer" }}
+              onMouseEnter={() => setCursorOverUI(true)}
+              onMouseLeave={() => setCursorOverUI(false)}
+            >
+              {filmProjects.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  className={`
                   rounded-full transition-all duration-500
                   ${i === activeIndex
-                    ? "w-[7px] h-[7px] bg-white"
-                    : "w-[5px] h-[5px] bg-white/30 hover:bg-white/60"
-                  }
+                      ? "w-[7px] h-[7px] bg-white"
+                      : "w-[5px] h-[5px] bg-white/30 hover:bg-white/60"
+                    }
                 `}
-                aria-label={`Go to project ${i + 1}`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+                  aria-label={`Go to project ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Photo drawer — slides up when photography selected */}
-      <div
-        className="w-full bg-[var(--color-bg)] transition-all duration-700 ease-in-out"
-        style={{
-          minHeight: isPhotos ? "100vh" : "0",
-          opacity: isPhotos ? 1 : 0,
-        }}
-      >
-        {isPhotos && (
-          <div style={{ paddingTop: 100 }}>
-            <PhotoDrawer projects={photoProjects} />
-          </div>
-        )}
-      </div>
+        {/* Photo drawer — slides up when photography selected */}
+        <div
+          className="w-full bg-[var(--color-bg)] transition-all duration-700 ease-in-out"
+          style={{
+            minHeight: isPhotos ? "100vh" : "0",
+            opacity: isPhotos ? 1 : 0,
+          }}
+        >
+          {isPhotos && (
+            <div style={{ paddingTop: 100 }}>
+              <PhotoDrawer projects={photoProjects} />
+            </div>
+          )}
+        </div>
 
-      {/* Bottom bar — filters (always visible, fixed) */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between"
-        onClick={(e) => e.stopPropagation()}
-        onMouseEnter={() => setCursorOverUI(true)}
-        onMouseLeave={() => setCursorOverUI(false)}
-        style={{
-          padding: `0 24px`,
-          paddingBottom: 24,
-          cursor: "default",
-          background: isPhotos ? "linear-gradient(to top, var(--color-bg) 60%, transparent)" : undefined,
-        }}
-      >
-        {/* Left — FILM / PHOTOGRAPHY (hidden when photo section disabled) */}
-        {SHOW_PHOTO_SECTION ? (
-          <nav className="flex gap-7">
-            {(["film", "photography"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setMediaFilter(f)}
-                className={`
+        {/* Bottom bar — filters (always visible, fixed) */}
+        <div
+          className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between"
+          onClick={(e) => e.stopPropagation()}
+          onMouseEnter={() => setCursorOverUI(true)}
+          onMouseLeave={() => setCursorOverUI(false)}
+          style={{
+            padding: `0 24px`,
+            paddingBottom: 24,
+            cursor: "default",
+            background: isPhotos ? "linear-gradient(to top, var(--color-bg) 60%, transparent)" : undefined,
+          }}
+        >
+          {/* Left — FILM / PHOTOGRAPHY (hidden when photo section disabled) */}
+          {SHOW_PHOTO_SECTION ? (
+            <nav className="flex gap-7">
+              {(["film", "photography"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setMediaFilter(f)}
+                  className={`
                   text-sm sm:text-base tracking-[0.12em] uppercase cursor-pointer transition-all duration-300 pb-0.5
                   ${mediaFilter === f
-                    ? `${isPhotos ? "text-[var(--color-text)]" : "text-white"} border-b ${isPhotos ? "border-[var(--color-text)]" : "border-white"}`
-                    : `${isPhotos ? "text-[var(--color-text-muted)]" : "text-white/35"} border-b border-transparent ${isPhotos ? "hover:text-[var(--color-text)]" : "hover:text-white/60"}`
-                  }
+                      ? `${isPhotos ? "text-[var(--color-text)]" : "text-white"} border-b ${isPhotos ? "border-[var(--color-text)]" : "border-white"}`
+                      : `${isPhotos ? "text-[var(--color-text-muted)]" : "text-white/35"} border-b border-transparent ${isPhotos ? "hover:text-[var(--color-text)]" : "hover:text-white/60"}`
+                    }
                 `}
-              >
-                {f}
-              </button>
-            ))}
-          </nav>
-        ) : <div />}
+                >
+                  {f}
+                </button>
+              ))}
+            </nav>
+          ) : <div />}
 
-        {/* Right — category filters */}
-        <nav className="flex gap-4 sm:gap-7 flex-wrap">
-          {mediaFilter === "film"
-            ? visibleFilmCategories.map((key) => (
+          {/* Right — category filters */}
+          <nav className="flex gap-4 sm:gap-7 flex-wrap">
+            {mediaFilter === "film"
+              ? visibleFilmCategories.map((key) => (
                 <button
                   key={key}
                   onClick={() => setFilmCategory(key)}
@@ -410,7 +420,7 @@ export default function ProjectSlideshow({
                   {formatLabel(key)}
                 </button>
               ))
-            : PHOTO_CATEGORIES.map((key) => (
+              : PHOTO_CATEGORIES.map((key) => (
                 <button
                   key={key}
                   onClick={() => setPhotoCategory(key)}
@@ -425,8 +435,17 @@ export default function ProjectSlideshow({
                   {formatLabel(key)}
                 </button>
               ))}
-        </nav>
+          </nav>
+        </div>
+
+        {/* Focus View Modal — client-side */}
+        {focusedProject && (
+          <FocusViewModal
+            project={focusedProject}
+            onClose={() => setFocusedProject(null)}
+          />
+        )}
       </div>
-    </div>
+    </>
   );
 }

@@ -7,15 +7,15 @@ mux_playback_id: UgmDCmBfi02kZN7CQXb1014VvvTsn1CKKVrCbXUMP3fwI
 project_type: music-video
 year: 2023
 images:
-  - src: /assets/uploads/MV thumbnail_1.1.2.png
-  - src: /assets/uploads/still5_1.1.2.JPG
-  - src: /assets/uploads/still1_1.1.3.JPG
-  - src: /assets/uploads/still7_1.1.2.JPG
-  - src: /assets/uploads/still9_1.1.12.JPG
-  - src: /assets/uploads/still4_1.1.3.JPG
-  - src: /assets/uploads/still2_1.1.5.JPG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/MV%20thumbnail_1.1.2.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/still5_1.1.2.JPG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/still1_1.1.3.JPG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/still7_1.1.2.JPG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/still9_1.1.12.JPG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/still4_1.1.3.JPG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/still2_1.1.5.JPG
 date: 2024-07-31T18:51:10.292Z
-position: 3
+position: 13
 ---
 
 Directed, Edited, & Produced by: Rommel Nunez

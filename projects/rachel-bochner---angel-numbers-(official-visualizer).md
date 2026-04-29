@@ -7,12 +7,12 @@ mux_playback_id: UPgDUbpdaDhHFsAi1C7oxvSV6daORs01PXgR6NrFPgqw
 project_type: visualizer
 year: 2024
 images:
-  - src: /assets/uploads/angelnumbers_1.20.1.jpg
-  - src: /assets/uploads/angelnumbers_2.9.1.jpg
-  - src: /assets/uploads/angelnumbers_1.36.1.jpg
-  - src: /assets/uploads/angelnumbers_1.5.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/angelnumbers_1.20.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/angelnumbers_2.9.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/angelnumbers_1.36.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/angelnumbers_1.5.1.jpg
 date: 2024-07-31T21:09:15.468Z
-position: 2
+position: 12
 ---
 
 Production Company: Baxtop Agency

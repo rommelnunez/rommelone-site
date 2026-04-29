@@ -19,10 +19,8 @@ export function generateMetadata(): Metadata {
 
 export default function RootLayout({
   children,
-  modal,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode;
 }) {
   const settings = getSettings();
 
@@ -38,7 +36,6 @@ export default function RootLayout({
             socialTitle={settings.i18n.site_social_title}
           />
           <main>{children}</main>
-          {modal}
         </ThemeProvider>
       </body>
     </html>

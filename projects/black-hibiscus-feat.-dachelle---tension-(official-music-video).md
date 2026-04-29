@@ -7,16 +7,16 @@ mux_playback_id: IWx19RBGs57aYPZxACxUzdcTILXwBoD6QfwHgbj02fUk
 project_type: music-video
 year: 2024
 images:
-  - src: /assets/uploads/1.20.1_1.20.1.jpeg
-  - src: /assets/uploads/1.16.1_1.16.1.jpeg
-  - src: /assets/uploads/1.9.1_1.9.1.jpeg
-  - src: /assets/uploads/1.3.1_1.3.1.jpeg
-  - src: /assets/uploads/1.52.1_1.52.1.jpeg
-  - src: /assets/uploads/1.45.1_1.45.1.jpeg
-  - src: /assets/uploads/1.43.1_1.43.1.jpeg
-  - src: /assets/uploads/1.35.1_1.35.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.20.1_1.20.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.16.1_1.16.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.9.1_1.9.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.3.1_1.3.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.52.1_1.52.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.45.1_1.45.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.43.1_1.43.1.jpeg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/1.35.1_1.35.1.jpeg
 date: 2024-07-31T21:24:53.310Z
-position: 0
+position: 10
 ---
 
 Director & Actor: Jayjay Ugbe @theblackhibiscus

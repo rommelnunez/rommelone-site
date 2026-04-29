@@ -7,10 +7,10 @@ mux_playback_id: 1JYJgwkWgaj3kXQp3s3a7JAXc6XKixKUHkdbVxcu8aM
 project_type: live-session
 year: 2024
 images:
-  - src: /assets/uploads/thumnails-fll_1.69.1 2.PNG
-  - src: /assets/uploads/thumnails-fll_1.328.1 2.PNG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/thumnails-fll_1.69.1%202.PNG
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/thumnails-fll_1.328.1%202.PNG
 date: 2024-07-31T17:52:21.467Z
-position: 2
+position: 12
 ---
 
 MUSICIANS

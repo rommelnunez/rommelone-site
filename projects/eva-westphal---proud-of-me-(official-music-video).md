@@ -7,15 +7,15 @@ mux_playback_id: aOu8DHr01y2i6Fy1i00M8tBmjGck65tv12H4BCXqi9x4o
 project_type: music-video
 year: 2023
 images:
-  - src: /assets/uploads/stills_1.1.1.jpg
-  - src: /assets/uploads/stills_1.2.1.jpg
-  - src: /assets/uploads/stills_1.3.1.jpg
-  - src: /assets/uploads/stills_1.4.1.jpg
-  - src: /assets/uploads/stills_1.5.1.jpg
-  - src: /assets/uploads/stills_1.6.1.jpg
-  - src: /assets/uploads/stills_1.7.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.1.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.2.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.3.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.4.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.5.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.6.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stills_1.7.1.jpg
 date: 2024-07-31T20:24:30.028Z
-position: 4
+position: 14
 ---
 
 Director, Editor, Producer - Rommel Nuñez

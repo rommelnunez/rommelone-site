@@ -7,14 +7,14 @@ mux_playback_id: 4WE6ls3kz2pQ3ivpUyekJAHiiLmSwF013dAVpXYsYoNw
 project_type: music-video
 year: 2024
 images:
-  - src: /assets/uploads/stilldwmy_1.1.5.png
-  - src: /assets/uploads/stilldwmy_1.1.6.png
-  - src: /assets/uploads/stilldwmy_1.1.1.png
-  - src: /assets/uploads/stilldwmy_1.1.7.png
-  - src: /assets/uploads/stilldwmy_1.1.3.png
-  - src: /assets/uploads/stilldwmy_1.1.2.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stilldwmy_1.1.5.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stilldwmy_1.1.6.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stilldwmy_1.1.1.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stilldwmy_1.1.7.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stilldwmy_1.1.3.png
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/stilldwmy_1.1.2.png
 date: 2024-09-08T04:45:49.408Z
-position: 0
+position: 4
 ---
 
 Director & Actor: Jayjay Ugbe [@theblackhibiscus](https://www.instagram.com/theblackhibiscus/)

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import MuxPlayer from "@mux/mux-player-react";
+import dynamic from "next/dynamic";
+
+const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
+  ssr: false,
+});
 
 interface SlideVideoPreviewProps {
   playbackId: string;
@@ -33,7 +37,6 @@ export default function SlideVideoPreview({
           if (!hasPlayed.current) {
             hasPlayed.current = true;
             setPlaying(true);
-            // Notify parent after fade-in completes (1.5s)
             if (onPlaybackStarted) {
               setTimeout(onPlaybackStarted, 1500);
             }

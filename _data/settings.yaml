@@ -19,8 +19,8 @@ metadata:
     co-founder @ [Baxtop](https://baxtop.agency).
   site_email: rommel@baxtop.agency
   site_social_url: 'https://instagram.com/its.rommel'
-  site_icon_svg: /assets/uploads/favicon.svg
-  site_icon_png: /assets/uploads/sig_black.PNG
+  site_icon_svg: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/favicon.svg
+  site_icon_png: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/sig_black.PNG
   site_ga4_id: ''
   seo:
     site_title: ROMMEL

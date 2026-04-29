@@ -7,15 +7,15 @@ mux_playback_id: VEWamH6jcGdfLPp00lk00AGEILnc3bAAqUmAO9XiVwIC00
 project_type: music-video
 year: 2024
 images:
-  - src: /assets/uploads/Untitled_1.1.2.jpg
-  - src: /assets/uploads/Untitled_1.2.1.jpg
-  - src: /assets/uploads/Untitled_1.2.2.jpg
-  - src: /assets/uploads/Untitled_1.2.3.jpg
-  - src: /assets/uploads/Untitled_1.2.4.jpg
-  - src: /assets/uploads/Untitled_1.2.5.jpg
-  - src: /assets/uploads/Untitled_1.2.6.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.1.2.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.2.1.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.2.2.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.2.3.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.2.4.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.2.5.jpg
+  - src: https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/Untitled_1.2.6.jpg
 date: 2024-07-31T17:30:54.310Z
-position: 1
+position: 3
 ---
 
 Production Company: Baxtop Agency
