@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
+import ProgressiveImage from "./ProgressiveImage";
 
 interface ProjectCardProps {
   project: Project;
@@ -28,14 +28,13 @@ export default function ProjectCard({
     >
       {/* 16:9 thumbnail */}
       <div className="project-card-thumb relative aspect-video overflow-hidden bg-[var(--color-surface)]">
-        <Image
+        <ProgressiveImage
           src={thumbnail}
           alt={project.images[0]?.caption || project.title}
           fill
           sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           loading={priority ? "eager" : "lazy"}
-          unoptimized
         />
 
         {/* Hover overlay — gradient + text */}

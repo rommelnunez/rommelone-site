@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllSlugs, getProjectBySlug } from "@/lib/projects";
 import { getSettings } from "@/lib/settings";
 import VideoEmbed from "@/components/VideoEmbed";
+import ProgressiveImage from "@/components/ProgressiveImage";
 import { remark } from "remark";
 import html from "remark-html";
 
@@ -88,7 +88,7 @@ export default async function ProjectPage({
       {project.images.length > 0 && (
         <section className="px-6 sm:px-8 space-y-1 pb-8">
           {project.images.map((img, i) => (
-            <Image
+            <ProgressiveImage
               key={i}
               src={img.src}
               alt={img.caption || project.title}
@@ -97,7 +97,6 @@ export default async function ProjectPage({
               sizes="100vw"
               className="w-full h-auto"
               loading={i === 0 ? "eager" : "lazy"}
-              unoptimized
             />
           ))}
         </section>

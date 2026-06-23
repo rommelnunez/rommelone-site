@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import Image from "next/image";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
 import SlideVideoPreview from "./SlideVideoPreview";
 import PhotoDrawer from "./PhotoDrawer";
 import FocusViewModal from "./FocusViewModal";
+import ProgressiveImage from "./ProgressiveImage";
 
 type MediaFilter = "film" | "photography";
 
@@ -240,6 +240,27 @@ export default function ProjectSlideshow({
     return project.images[0]?.src || getMuxThumbnail(project.muxPlaybackId);
   };
 
+  useEffect(() => {
+    if (isPhotos) return;
+
+    const urls = [filmProjects[activeIndex + 1], filmProjects[activeIndex + 2]]
+      .map((project) => project ? getThumbnail(project) : null)
+      .filter((src): src is string => Boolean(src));
+
+    const preloads = urls.map((src) => {
+      const img = new window.Image();
+      img.src = src;
+      return img;
+    });
+
+    return () => {
+      preloads.forEach((img) => {
+        img.onload = null;
+        img.onerror = null;
+      });
+    };
+  }, [activeIndex, filmProjects, isPhotos]);
+
   const current = filmProjects[activeIndex];
 
   const formatLabel = (s: string) =>
@@ -283,6 +304,8 @@ export default function ProjectSlideshow({
             const thumb = getThumbnail(project);
             if (!thumb) return null;
             const isActive = i === activeIndex;
+            const isNearby = Math.abs(i - activeIndex) <= 1;
+            if (!isNearby) return null;
             const showVideo = AUTOPLAY_PREVIEW && isActive && project.muxPlaybackId && !isPhotos;
 
             return (
@@ -294,14 +317,14 @@ export default function ProjectSlideshow({
                   zIndex: isActive ? 1 : 0,
                 }}
               >
-                <Image
+                <ProgressiveImage
                   src={thumb}
                   alt={project.title}
                   fill
                   className="object-cover"
                   sizes="100vw"
                   priority={i <= 1}
-                  unoptimized
+                  revealClassName="duration-[900ms] ease-out"
                 />
                 {showVideo && <SlideVideoPreview playbackId={project.muxPlaybackId!} startTime={AUTOPLAY_START_SECONDS} onPlaybackStarted={scheduleAutoAdvance} />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />

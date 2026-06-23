@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
@@ -11,6 +10,7 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
 import FocusViewCarousel, { buildCarouselItems } from "./FocusViewCarousel";
 import { getMuxThumbnail } from "@/lib/mux";
 import type { Project } from "@/lib/types";
+import ProgressiveImage from "./ProgressiveImage";
 
 const EDGE_PAD = 48;
 const HIDE_UI_DELAY = 3000;
@@ -216,14 +216,13 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
             />
           ) : currentItem ? (
             <div className="w-full h-full flex items-center justify-center">
-              <Image
+              <ProgressiveImage
                 src={currentItem.src}
                 alt={currentItem.alt}
                 width={1800}
                 height={1200}
                 className="max-w-full max-h-full object-contain"
                 priority
-                unoptimized
               />
             </div>
           ) : null}

@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import type { ProjectImage } from "@/lib/types";
+import ProgressiveImage from "./ProgressiveImage";
 
 interface CarouselItem {
   type: "video" | "image";
@@ -38,13 +38,13 @@ export default function FocusViewCarousel({
             }
           `}
         >
-          <Image
+          <ProgressiveImage
             src={item.src}
             alt={item.alt}
             fill
             sizes="100px"
             className="object-cover"
-            unoptimized
+            revealClassName="duration-300 ease-out"
           />
           {item.type === "video" && (
             <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] drop-shadow-md">

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import FilterNav, { type Filter } from "./FilterNav";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
+import ProgressiveImage from "./ProgressiveImage";
 
 interface ProjectCarouselProps {
   projects: Project[];
@@ -81,14 +81,13 @@ export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
                     className="block w-[95%] sm:w-[85%] lg:w-[80%]"
                   >
                     <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl">
-                      <Image
+                      <ProgressiveImage
                         src={thumb}
                         alt={project.images[0]?.caption || project.title}
                         fill
                         sizes="(min-width: 1024px) 45rem, (min-width: 640px) 35rem, 85vw"
                         className="object-cover"
                         priority
-                        unoptimized
                       />
                       {/* Play button overlay for videos */}
                       {project.muxPlaybackId && (
@@ -105,13 +104,12 @@ export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
                     className="w-[95%] sm:w-[85%] lg:w-[80%] cursor-pointer"
                   >
                     <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg">
-                      <Image
+                      <ProgressiveImage
                         src={thumb}
                         alt={project.title}
                         fill
                         sizes="22rem"
                         className="object-cover"
-                        unoptimized
                       />
                     </div>
                   </div>

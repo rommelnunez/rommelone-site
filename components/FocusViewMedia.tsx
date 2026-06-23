@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import VideoEmbed from "./VideoEmbed";
 import type { CarouselItem } from "./FocusViewCarousel";
+import ProgressiveImage from "./ProgressiveImage";
 
 interface FocusViewMediaProps {
   item: CarouselItem;
@@ -23,7 +23,7 @@ export default function FocusViewMedia({
 
   return (
     <div className="bg-black flex items-center justify-center max-h-[70vh] min-h-[200px]">
-      <Image
+      <ProgressiveImage
         src={item.src}
         alt={item.alt}
         width={1200}
@@ -31,7 +31,6 @@ export default function FocusViewMedia({
         className="w-full h-auto max-h-[70vh] object-contain"
         sizes="(min-width: 768px) 80vw, 100vw"
         priority
-        unoptimized
       />
     </div>
   );

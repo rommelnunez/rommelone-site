@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { Project } from "@/lib/types";
+import ProgressiveImage from "./ProgressiveImage";
 
 interface PhotoDrawerProps {
   projects: Project[];
@@ -21,13 +21,12 @@ export default function PhotoDrawer({ projects }: PhotoDrawerProps) {
             href={`/project/${project.slug}`}
             className="group block relative aspect-square overflow-hidden bg-[#111]"
           >
-            <Image
+            <ProgressiveImage
               src={thumb}
               alt={project.title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-              unoptimized
             />
             {/* Title on hover */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-4">
