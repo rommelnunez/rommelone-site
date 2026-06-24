@@ -23,6 +23,8 @@ const AUTOPLAY_PREVIEW = true;
 const AUTOPLAY_START_SECONDS = 30;
 const SHOW_PHOTO_SECTION = false; // Set to true to re-enable photography drawer
 const AUTO_ADVANCE_DELAY = 6000; // ms after video fade-in to auto-advance
+const DOT_HIT_SIZE = 28;
+const DOT_MAGNET_RADIUS = 62;
 
 interface ProjectSlideshowProps {
   projects: Project[];
@@ -41,7 +43,11 @@ export default function ProjectSlideshow({
   const locked = useRef(false);
   const touchStartY = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrubIndexRef = useRef(0);
+  const railScrubbingRef = useRef(false);
+  const railClickSuppressedRef = useRef(false);
 
   // Auto-advance: called when the video fade-in completes
   const scheduleAutoAdvance = useCallback(() => {
@@ -75,6 +81,8 @@ export default function ProjectSlideshow({
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [cursorOverUI, setCursorOverUI] = useState(false);
+  const [railCursorY, setRailCursorY] = useState<number | null>(null);
+  const [railScrubbing, setRailScrubbing] = useState(false);
 
   const isPhotos = mediaFilter === "photography";
 
@@ -147,9 +155,96 @@ export default function ProjectSlideshow({
     [filmProjects.length, activeIndex]
   );
 
+  const goToRailIndex = useCallback(
+    (i: number) => {
+      if (i < 0 || i >= filmProjects.length || i === scrubIndexRef.current) return;
+      scrubIndexRef.current = i;
+      clearAutoAdvance();
+      locked.current = false;
+      setActiveIndex(i);
+    },
+    [clearAutoAdvance, filmProjects.length]
+  );
+
+  const getRailIndexFromClientY = useCallback(
+    (clientY: number) => {
+      const rail = railRef.current;
+      if (!rail || filmProjects.length === 0) return activeIndex;
+
+      const rect = rail.getBoundingClientRect();
+      const localY = Math.min(Math.max(clientY - rect.top, 0), rect.height);
+      const progress = rect.height === 0 ? 0 : localY / rect.height;
+      return Math.min(
+        filmProjects.length - 1,
+        Math.max(0, Math.round(progress * (filmProjects.length - 1)))
+      );
+    },
+    [activeIndex, filmProjects.length]
+  );
+
+  const handleRailPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      setRailCursorY(e.clientY);
+      if (railScrubbingRef.current) {
+        goToRailIndex(getRailIndexFromClientY(e.clientY));
+      }
+    },
+    [getRailIndexFromClientY, goToRailIndex]
+  );
+
+  const handleRailPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      railClickSuppressedRef.current = true;
+      railScrubbingRef.current = true;
+      setCursorOverUI(true);
+      setRailScrubbing(true);
+      setRailCursorY(e.clientY);
+      goToRailIndex(getRailIndexFromClientY(e.clientY));
+    },
+    [getRailIndexFromClientY, goToRailIndex]
+  );
+
+  const finishRailScrub = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    locked.current = false;
+    scrubIndexRef.current = activeIndexRef.current;
+    railScrubbingRef.current = false;
+    setRailScrubbing(false);
+    window.setTimeout(() => {
+      railClickSuppressedRef.current = false;
+    }, 0);
+  }, []);
+
+  const getDotScale = useCallback(
+    (i: number) => {
+      const activeBase = i === activeIndex ? 1.35 : 1;
+      const rail = railRef.current;
+      if (railCursorY === null || !rail) return activeBase;
+
+      const rect = rail.getBoundingClientRect();
+      const centerY =
+        rect.top +
+        DOT_HIT_SIZE / 2 +
+        i * ((rect.height - DOT_HIT_SIZE) / Math.max(1, filmProjects.length - 1));
+      const distance = Math.abs(railCursorY - centerY);
+      const influence = Math.max(0, 1 - distance / DOT_MAGNET_RADIUS);
+
+      return activeBase + influence * 1.25;
+    },
+    [activeIndex, filmProjects.length, railCursorY]
+  );
+
   // Mouse wheel
   const activeIndexRef = useRef(activeIndex);
   activeIndexRef.current = activeIndex;
+  scrubIndexRef.current = activeIndex;
   const filteredLenRef = useRef(filmProjects.length);
   filteredLenRef.current = filmProjects.length;
 
@@ -306,7 +401,7 @@ export default function ProjectSlideshow({
             const isActive = i === activeIndex;
             const isNearby = Math.abs(i - activeIndex) <= 1;
             if (!isNearby) return null;
-            const showVideo = AUTOPLAY_PREVIEW && isActive && project.muxPlaybackId && !isPhotos;
+            const showVideo = AUTOPLAY_PREVIEW && isActive && project.muxPlaybackId && !isPhotos && !railScrubbing;
 
             return (
               <div
@@ -353,24 +448,61 @@ export default function ProjectSlideshow({
           {/* Dot navigation (film mode only) */}
           {!isPhotos && filmProjects.length > 1 && (
             <div
-              className="absolute top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2"
-              style={{ right: EDGE_PAD, cursor: "pointer" }}
+              ref={railRef}
+              className="absolute top-1/2 -translate-y-1/2 z-20 flex touch-none flex-col items-center py-3"
+              style={{
+                right: "clamp(16px, 4vw, 48px)",
+                cursor: railScrubbing ? "grabbing" : "grab",
+              }}
               onMouseEnter={() => setCursorOverUI(true)}
-              onMouseLeave={() => setCursorOverUI(false)}
+              onMouseLeave={() => {
+                setCursorOverUI(false);
+                if (!railScrubbing) setRailCursorY(null);
+              }}
+              onPointerDown={handleRailPointerDown}
+              onPointerMove={handleRailPointerMove}
+              onPointerUp={finishRailScrub}
+              onPointerCancel={finishRailScrub}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchMove={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
             >
               {filmProjects.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => goTo(i)}
-                  className={`
-                  rounded-full transition-all duration-500
-                  ${i === activeIndex
-                      ? "w-[7px] h-[7px] bg-white"
-                      : "w-[5px] h-[5px] bg-white/30 hover:bg-white/60"
-                    }
-                `}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (railClickSuppressedRef.current) return;
+                    goToRailIndex(i);
+                  }}
+                  className="grid place-items-center"
+                  style={{
+                    width: DOT_HIT_SIZE,
+                    height: DOT_HIT_SIZE,
+                  }}
                   aria-label={`Go to project ${i + 1}`}
-                />
+                >
+                  <span
+                    className="block rounded-full transition-[background-color,opacity,transform] duration-200 ease-out"
+                    style={{
+                      width: i === activeIndex ? 7 : 5,
+                      height: i === activeIndex ? 7 : 5,
+                      background: i === activeIndex ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.34)",
+                      opacity: i === activeIndex ? 1 : 0.82,
+                      transform: `scale(${getDotScale(i)})`,
+                      transformOrigin: "center",
+                    }}
+                  />
+                </button>
               ))}
             </div>
           )}
