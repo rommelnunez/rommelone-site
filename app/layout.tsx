@@ -3,17 +3,52 @@ import { GeistSans } from "geist/font/sans";
 import ThemeProvider from "@/components/ThemeProvider";
 import Header from "@/components/Header";
 import { getSettings } from "@/lib/settings";
+import { getAllProjects } from "@/lib/projects";
 import "./globals.css";
 
 export function generateMetadata(): Metadata {
   const settings = getSettings();
+  const title = settings.metadata.seo?.site_title || settings.metadata.site_title;
+  const description =
+    settings.metadata.seo?.site_description || settings.metadata.site_description;
+  const siteUrl = settings.metadata.site_url;
+  const previewProject = getAllProjects().find((project) => project.muxPlaybackId);
+  const previewImage = previewProject?.images[0]?.src;
+
   return {
+    metadataBase: new URL(siteUrl),
     title: {
-      default: settings.metadata.seo?.site_title || settings.metadata.site_title,
+      default: title,
       template: `%s | ${settings.metadata.site_title}`,
     },
-    description:
-      settings.metadata.seo?.site_description || settings.metadata.site_description,
+    description,
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: "/favicon.ico", sizes: "any" },
+      ],
+    },
+    openGraph: {
+      title,
+      description,
+      url: siteUrl,
+      siteName: settings.metadata.site_title,
+      type: "website",
+      images: previewImage
+        ? [
+            {
+              url: previewImage,
+              alt: previewProject?.title || settings.metadata.site_title,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: previewImage ? [previewImage] : undefined,
+    },
   };
 }
 
