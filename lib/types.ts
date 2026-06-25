@@ -57,6 +57,7 @@ export interface Settings {
     site_description?: string;
     site_email?: string;
     site_social_url?: string;
+    site_imdb_url?: string;
     site_icon_svg?: string;
     site_icon_png?: string;
     site_ga4_id?: string;

@@ -8,6 +8,7 @@ interface HeaderProps {
   enableDarkMode?: boolean;
   email?: string;
   socialUrl?: string;
+  imdbUrl?: string;
   socialTitle?: string;
 }
 
@@ -15,6 +16,7 @@ export default function Header({
   title,
   email,
   socialUrl,
+  imdbUrl,
 }: HeaderProps) {
   return (
     <header
@@ -58,6 +60,24 @@ export default function Header({
               src="/assets/icons/instagram.png"
               alt="Instagram"
               width={22}
+              height={22}
+              className="invert-0"
+              unoptimized
+            />
+          </a>
+        )}
+        {imdbUrl && (
+          <a
+            href={imdbUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="opacity-70 hover:opacity-100 transition-opacity"
+            aria-label="IMDb"
+          >
+            <Image
+              src="/assets/icons/imdb.png"
+              alt="IMDb"
+              width={34}
               height={22}
               className="invert-0"
               unoptimized

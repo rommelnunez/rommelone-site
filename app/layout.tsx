@@ -68,6 +68,7 @@ export default function RootLayout({
             enableDarkMode={settings.theme.theme_features.enable_dark_mode}
             email={settings.metadata.site_email}
             socialUrl={settings.metadata.site_social_url}
+            imdbUrl={settings.metadata.site_imdb_url}
             socialTitle={settings.i18n.site_social_title}
           />
           <main>{children}</main>
