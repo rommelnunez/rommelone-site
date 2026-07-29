@@ -5,7 +5,7 @@ description: |
   DIRECTOR / EDITOR
 project_type: commercial
 year: 2026
-position: 0
+position: 0.2
 date: 2026-07-29T22:20:25.000Z
 videos:
   - mux_playback_id: SYl00Tti1r01V9L01A72y5k01tyR7lFJDh9nA7CPFSSfCfs
