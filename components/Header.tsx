@@ -20,18 +20,18 @@ export default function Header({
 }: HeaderProps) {
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
+      className="pointer-events-none fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
       style={{ padding: 48 }}
     >
       {/* Left — brand */}
-      <Link href="/" className="no-underline">
+      <Link href="/" className="pointer-events-auto no-underline">
         <span className="text-2xl sm:text-3xl font-light tracking-[0.08em] lowercase text-white">
           {title.toLowerCase()}
         </span>
       </Link>
 
       {/* Right — icon links */}
-      <nav className="flex items-center gap-6">
+      <nav className="pointer-events-auto flex items-center gap-6">
         {email && (
           <a
             href={`mailto:${email}`}

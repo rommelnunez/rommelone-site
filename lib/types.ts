@@ -3,6 +3,13 @@ export interface ProjectImage {
   caption?: string;
 }
 
+export interface ProjectVideo {
+  playbackId: string | null;
+  aspect: "16x9" | "9x16";
+  label?: string;
+  poster?: string;
+}
+
 export interface ProjectSeo {
   title?: string;
   description?: string;
@@ -14,6 +21,8 @@ export interface Project {
   title: string;
   description: string;
   muxPlaybackId: string | null;
+  videos: ProjectVideo[];
+  placeholder: boolean;
   year: number | null;
   images: ProjectImage[];
   projectType: string | null;

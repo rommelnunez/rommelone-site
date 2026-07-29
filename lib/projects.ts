@@ -18,6 +18,20 @@ function parseProject(filePath: string): Project | null {
     title: data.title,
     description: data.description || "",
     muxPlaybackId: data.mux_playback_id || null,
+    videos: (data.videos || [])
+      .filter((v: { mux_playback_id?: string; label?: string } | null) => v)
+      .map((v: {
+        mux_playback_id?: string;
+        aspect?: string;
+        label?: string;
+        poster?: string;
+      }) => ({
+        playbackId: v.mux_playback_id || null,
+        aspect: v.aspect === "9x16" ? "9x16" : "16x9",
+        label: v.label || "",
+        poster: v.poster || undefined,
+      })),
+    placeholder: data.placeholder ?? false,
     year: data.year || null,
     images: (data.images || []).filter(
       (img: { src?: string }) => img && img.src

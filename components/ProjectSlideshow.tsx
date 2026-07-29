@@ -7,14 +7,12 @@ import SlideVideoPreview from "./SlideVideoPreview";
 import PhotoDrawer from "./PhotoDrawer";
 import FocusViewModal from "./FocusViewModal";
 import ProgressiveImage from "./ProgressiveImage";
+import CampaignRack from "./CampaignRack";
+import PlaceholderFrame from "./PlaceholderFrame";
+import LoadingScreen from "./LoadingScreen";
 
 type MediaFilter = "film" | "photography";
-
-const FILM_CATEGORIES = ["all", "commercials", "music-videos", "narrative"] as const;
-const PHOTO_CATEGORIES = ["all", "editorial", "commercial"] as const;
-
-type FilmCategory = (typeof FILM_CATEGORIES)[number];
-type PhotoCategory = (typeof PHOTO_CATEGORIES)[number];
+type WorkSection = "music-videos" | "commercials";
 
 const EDGE_PAD = 48;
 
@@ -23,8 +21,15 @@ const AUTOPLAY_PREVIEW = true;
 const AUTOPLAY_START_SECONDS = 30;
 const SHOW_PHOTO_SECTION = false; // Set to true to re-enable photography drawer
 const AUTO_ADVANCE_DELAY = 6000; // ms after video fade-in to auto-advance
+const CUT_ADVANCE_DELAY = 4200; // ms per campaign cut before auto-stepping
+const STATIC_ADVANCE_DELAY = 5000; // ms for slides with no playable video
 const DOT_HIT_SIZE = 28;
 const DOT_MAGNET_RADIUS = 62;
+const SECTION_FADE_MS = 350;
+
+const isCampaign = (p: Project) => p.videos.length > 0;
+const isCommercial = (p: Project) => p.projectType === "commercial";
+const pad = (n: number) => String(n).padStart(2, "0");
 
 interface ProjectSlideshowProps {
   projects: Project[];
@@ -33,49 +38,23 @@ interface ProjectSlideshowProps {
 
 export default function ProjectSlideshow({
   projects,
-  siteTitle,
 }: ProjectSlideshowProps) {
   const [focusedProject, setFocusedProject] = useState<Project | null>(null);
+  const [focusedCutIndex, setFocusedCutIndex] = useState(0);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("film");
-  const [filmCategory, setFilmCategory] = useState<FilmCategory>("all");
-  const [photoCategory, setPhotoCategory] = useState<PhotoCategory>("all");
+  const [workSection, setWorkSection] = useState<WorkSection>("music-videos");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [cutIndex, setCutIndex] = useState(0);
+  const [deckFading, setDeckFading] = useState(false);
   const locked = useRef(false);
-  const touchStartY = useRef(0);
+  const touchStart = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrubIndexRef = useRef(0);
   const railScrubbingRef = useRef(false);
   const railClickSuppressedRef = useRef(false);
-
-  // Auto-advance: called when the video fade-in completes
-  const scheduleAutoAdvance = useCallback(() => {
-    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
-    autoAdvanceTimer.current = setTimeout(() => {
-      if (locked.current) return;
-      // Advance to next, or loop to first
-      locked.current = true;
-      setActiveIndex((prev) => {
-        const filmLen = projects.filter((p) => !!p.muxPlaybackId).length;
-        return prev + 1 < filmLen ? prev + 1 : 0;
-      });
-      setTimeout(() => { locked.current = false; }, 1100);
-    }, AUTO_ADVANCE_DELAY);
-  }, [projects]);
-
-  // Clear auto-advance on unmount or manual navigation
-  const clearAutoAdvance = useCallback(() => {
-    if (autoAdvanceTimer.current) {
-      clearTimeout(autoAdvanceTimer.current);
-      autoAdvanceTimer.current = null;
-    }
-  }, []);
-
-  // Clear timer when user manually navigates
-  useEffect(() => {
-    clearAutoAdvance();
-  }, [activeIndex, clearAutoAdvance]);
+  const userNavRef = useRef(false);
 
   // Custom cursor state
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
@@ -86,101 +65,201 @@ export default function ProjectSlideshow({
 
   const isPhotos = mediaFilter === "photography";
 
-  // Filter projects by media type
-  const filmProjects = useMemo(() => projects.filter((p) => !!p.muxPlaybackId), [projects]);
-  const photoProjects = useMemo(() => projects.filter((p) => !p.muxPlaybackId), [projects]);
-  const filtered = isPhotos ? photoProjects : filmProjects;
+  // Partition projects
+  const filmProjects = useMemo(
+    () =>
+      projects.filter(
+        (p) => p.muxPlaybackId || p.videos.length > 0 || p.placeholder
+      ),
+    [projects]
+  );
+  const photoProjects = useMemo(
+    () =>
+      projects.filter(
+        (p) => !p.muxPlaybackId && p.videos.length === 0 && !p.placeholder
+      ),
+    [projects]
+  );
+  const musicVideoProjects = useMemo(
+    () => filmProjects.filter((p) => !isCommercial(p)),
+    [filmProjects]
+  );
+  const commercialProjects = useMemo(
+    () => filmProjects.filter(isCommercial),
+    [filmProjects]
+  );
+  const deck = workSection === "commercials" ? commercialProjects : musicVideoProjects;
+  const current = deck[activeIndex];
+  const currentIsCampaign = current ? isCampaign(current) : false;
 
-  // Derive which film categories have at least one project
-  const visibleFilmCategories = useMemo(() => {
-    const typeMap: Record<string, string> = {
-      "music-video": "music-videos",
-      "commercial": "commercials",
-      "narrative": "narrative",
-      "live-session": "music-videos",
-      "visualizer": "music-videos",
-      "documentary": "narrative",
-      "short-film": "narrative",
-      "editorial": "commercials",
-    };
-    const present = new Set<string>();
-    for (const p of filmProjects) {
-      if (p.projectType && typeMap[p.projectType]) {
-        present.add(typeMap[p.projectType]);
+  const sectionCounts = {
+    "music-videos": musicVideoProjects.length,
+    commercials: commercialProjects.length,
+  };
+
+  // Refs mirrored for event handlers registered once
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+  scrubIndexRef.current = activeIndex;
+  const cutIndexRef = useRef(cutIndex);
+  cutIndexRef.current = cutIndex;
+  const deckRef = useRef(deck);
+  deckRef.current = deck;
+
+  // Reset cut + user override when the slide or section changes
+  useEffect(() => {
+    setCutIndex(0);
+    userNavRef.current = false;
+  }, [activeIndex, workSection]);
+
+  // Clamp index when deck shrinks
+  useEffect(() => {
+    if (activeIndex >= deck.length && deck.length > 0) {
+      setActiveIndex(deck.length - 1);
+    }
+  }, [activeIndex, deck.length]);
+
+  // ─── Auto-advance (video-driven): called when a slide video fade-in completes ───
+  const scheduleAutoAdvance = useCallback(() => {
+    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+    autoAdvanceTimer.current = setTimeout(() => {
+      if (locked.current) return;
+      locked.current = true;
+      setActiveIndex((prev) =>
+        prev + 1 < deckRef.current.length ? prev + 1 : 0
+      );
+      setTimeout(() => {
+        locked.current = false;
+      }, 1100);
+    }, AUTO_ADVANCE_DELAY);
+  }, []);
+
+  const clearAutoAdvance = useCallback(() => {
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
+  }, []);
+
+  // Clear video-driven timer when user navigates
+  useEffect(() => {
+    clearAutoAdvance();
+  }, [activeIndex, clearAutoAdvance]);
+
+  // ─── Auto-advance (timer-driven): campaigns and placeholder slides ───
+  useEffect(() => {
+    if (isPhotos || focusedProject || deckFading) return;
+    const slide = deck[activeIndex];
+    if (!slide) return;
+    // Slides with a single preview video are handled by scheduleAutoAdvance
+    if (slide.muxPlaybackId && !isCampaign(slide)) return;
+
+    const campaign = isCampaign(slide);
+    const delay = campaign ? CUT_ADVANCE_DELAY : STATIC_ADVANCE_DELAY;
+    const timer = setTimeout(() => {
+      if (locked.current || userNavRef.current) return;
+      if (campaign) {
+        // Campaigns loop their own cuts; vertical scroll moves between projects
+        setCutIndex((cutIndex + 1) % slide.videos.length);
+      } else {
+        setActiveIndex((prev) =>
+          prev + 1 < deckRef.current.length ? prev + 1 : 0
+        );
       }
-    }
-    // Only show categories if there are multiple present
-    if (present.size <= 1) return [];
-    return FILM_CATEGORIES.filter(
-      (key) => key === "all" || present.has(key)
-    );
-  }, [filmProjects]);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [deck, activeIndex, cutIndex, isPhotos, focusedProject, deckFading]);
 
-  // Reset index when filter changes
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [mediaFilter, filmCategory, photoCategory]);
-
-  // Clamp index
-  useEffect(() => {
-    if (activeIndex >= filmProjects.length && filmProjects.length > 0) {
-      setActiveIndex(filmProjects.length - 1);
-    }
-  }, [activeIndex, filmProjects.length]);
-
+  // ─── Navigation ───
   const advance = useCallback(
     (direction: 1 | -1) => {
       if (locked.current || isPhotos) return;
-      const next = activeIndex + direction;
-      if (next < 0 || next >= filmProjects.length) return;
+      const next = activeIndexRef.current + direction;
+      if (next < 0 || next >= deckRef.current.length) return;
       locked.current = true;
       setActiveIndex(next);
       setTimeout(() => {
         locked.current = false;
       }, 1100);
     },
-    [activeIndex, filmProjects.length, isPhotos]
+    [isPhotos]
   );
 
-  const goTo = useCallback(
-    (i: number) => {
-      if (i >= 0 && i < filmProjects.length && i !== activeIndex) {
-        locked.current = true;
-        setActiveIndex(i);
-        setTimeout(() => {
-          locked.current = false;
-        }, 1100);
+  // Unified step: one gesture drives everything. On a campaign slide each
+  // step moves one cut; past the ends it flows on to the adjacent project.
+  const step = useCallback(
+    (direction: 1 | -1) => {
+      if (locked.current || isPhotos) return;
+      const slide = deckRef.current[activeIndexRef.current];
+      if (slide && slide.videos.length > 0) {
+        const next = cutIndexRef.current + direction;
+        if (next >= 0 && next < slide.videos.length) {
+          userNavRef.current = true;
+          locked.current = true;
+          setCutIndex(next);
+          setTimeout(() => {
+            locked.current = false;
+          }, 550);
+          return;
+        }
       }
+      advance(direction);
     },
-    [filmProjects.length, activeIndex]
+    [advance, isPhotos]
   );
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
-  const goToRailIndex = useCallback(
-    (i: number) => {
-      if (i < 0 || i >= filmProjects.length || i === scrubIndexRef.current) return;
-      scrubIndexRef.current = i;
+  const selectCut = useCallback((i: number) => {
+    userNavRef.current = true;
+    setCutIndex(i);
+  }, []);
+
+  const goToRailIndex = useCallback((i: number) => {
+    if (
+      i < 0 ||
+      i >= deckRef.current.length ||
+      i === scrubIndexRef.current
+    )
+      return;
+    scrubIndexRef.current = i;
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
+    locked.current = false;
+    setActiveIndex(i);
+  }, []);
+
+  // ─── Section switching (crossfade) ───
+  const switchSection = useCallback(
+    (next: WorkSection) => {
+      if (next === workSection || deckFading) return;
+      if (next === "commercials" && commercialProjects.length === 0) return;
       clearAutoAdvance();
-      locked.current = false;
-      setActiveIndex(i);
+      setDeckFading(true);
+      window.setTimeout(() => {
+        setWorkSection(next);
+        setActiveIndex(0);
+        setCutIndex(0);
+        userNavRef.current = false;
+        setDeckFading(false);
+      }, SECTION_FADE_MS);
     },
-    [clearAutoAdvance, filmProjects.length]
+    [workSection, deckFading, commercialProjects.length, clearAutoAdvance]
   );
 
-  const getRailIndexFromClientY = useCallback(
-    (clientY: number) => {
-      const rail = railRef.current;
-      if (!rail || filmProjects.length === 0) return activeIndex;
+  // ─── Rail scrubbing ───
+  const getRailIndexFromClientY = useCallback((clientY: number) => {
+    const rail = railRef.current;
+    const len = deckRef.current.length;
+    if (!rail || len === 0) return activeIndexRef.current;
 
-      const rect = rail.getBoundingClientRect();
-      const localY = Math.min(Math.max(clientY - rect.top, 0), rect.height);
-      const progress = rect.height === 0 ? 0 : localY / rect.height;
-      return Math.min(
-        filmProjects.length - 1,
-        Math.max(0, Math.round(progress * (filmProjects.length - 1)))
-      );
-    },
-    [activeIndex, filmProjects.length]
-  );
+    const rect = rail.getBoundingClientRect();
+    const localY = Math.min(Math.max(clientY - rect.top, 0), rect.height);
+    const progress = rect.height === 0 ? 0 : localY / rect.height;
+    return Math.min(len - 1, Math.max(0, Math.round(progress * (len - 1))));
+  }, []);
 
   const handleRailPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -232,90 +311,86 @@ export default function ProjectSlideshow({
       const centerY =
         rect.top +
         DOT_HIT_SIZE / 2 +
-        i * ((rect.height - DOT_HIT_SIZE) / Math.max(1, filmProjects.length - 1));
+        i * ((rect.height - DOT_HIT_SIZE) / Math.max(1, deck.length - 1));
       const distance = Math.abs(railCursorY - centerY);
       const influence = Math.max(0, 1 - distance / DOT_MAGNET_RADIUS);
 
       return activeBase + influence * 1.25;
     },
-    [activeIndex, filmProjects.length, railCursorY]
+    [activeIndex, deck.length, railCursorY]
   );
 
-  // Mouse wheel
-  const activeIndexRef = useRef(activeIndex);
-  activeIndexRef.current = activeIndex;
-  scrubIndexRef.current = activeIndex;
-  const filteredLenRef = useRef(filmProjects.length);
-  filteredLenRef.current = filmProjects.length;
-
+  // ─── Mouse wheel: one axis — steps cuts inside campaigns, projects otherwise ───
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     let accumulated = 0;
     let decayTimer: ReturnType<typeof setTimeout> | null = null;
-    const THRESHOLD = 50; // px of scroll delta needed to trigger advance
+    const THRESHOLD = 50; // px of scroll delta needed to trigger a step
 
     const onWheel = (e: WheelEvent) => {
       if (mediaFilter === "photography") return;
       e.preventDefault();
       if (locked.current) return;
 
-      // Accumulate scroll delta and decay it after inactivity
-      accumulated += e.deltaY;
+      // Use the dominant axis so trackpad horizontal swipes work too
+      const delta =
+        Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+
+      accumulated += delta;
       if (decayTimer) clearTimeout(decayTimer);
-      decayTimer = setTimeout(() => { accumulated = 0; }, 200);
+      decayTimer = setTimeout(() => {
+        accumulated = 0;
+      }, 200);
 
       if (Math.abs(accumulated) < THRESHOLD) return;
 
       const dir = accumulated > 0 ? 1 : -1;
       accumulated = 0;
-
-      const next = activeIndexRef.current + dir;
-      if (next < 0 || next >= filteredLenRef.current) return;
-
-      locked.current = true;
-      setActiveIndex(next);
-      setTimeout(() => {
-        locked.current = false;
-      }, 1200);
+      stepRef.current(dir);
     };
 
     container.addEventListener("wheel", onWheel, { passive: false });
     return () => container.removeEventListener("wheel", onWheel);
   }, [mediaFilter]);
 
-  // Touch navigation
+  // ─── Touch: swipe (either axis) = same unified step ───
   const onTouchStart = (e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
+    touchStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
     if (isPhotos) return;
-    const deltaY = touchStartY.current - e.changedTouches[0].clientY;
-    if (Math.abs(deltaY) > 50) {
-      advance(deltaY > 0 ? 1 : -1);
+    const deltaX = touchStart.current.x - e.changedTouches[0].clientX;
+    const deltaY = touchStart.current.y - e.changedTouches[0].clientY;
+    const delta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
+    if (Math.abs(delta) > 50) {
+      step(delta > 0 ? 1 : -1);
     }
   };
 
-  // Keyboard navigation
+  // ─── Keyboard ───
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isPhotos) return;
+      if (isPhotos || focusedProject) return;
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
-        advance(1);
+        step(1);
       }
       if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
-        advance(-1);
+        step(-1);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [advance, isPhotos]);
+  }, [step, isPhotos, focusedProject]);
 
-  // Custom cursor tracking
+  // ─── Custom cursor tracking ───
   const onMouseMove = (e: React.MouseEvent) => {
     setCursorPos({ x: e.clientX, y: e.clientY });
   };
@@ -325,8 +400,8 @@ export default function ProjectSlideshow({
 
   const handleSlideClick = () => {
     if (isPhotos) return;
-    const current = filmProjects[activeIndex];
     if (current) {
+      setFocusedCutIndex(0);
       setFocusedProject(current);
     }
   };
@@ -335,11 +410,12 @@ export default function ProjectSlideshow({
     return project.images[0]?.src || getMuxThumbnail(project.muxPlaybackId);
   };
 
+  // Preload upcoming slide thumbnails
   useEffect(() => {
     if (isPhotos) return;
 
-    const urls = [filmProjects[activeIndex + 1], filmProjects[activeIndex + 2]]
-      .map((project) => project ? getThumbnail(project) : null)
+    const urls = [deck[activeIndex + 1], deck[activeIndex + 2]]
+      .map((project) => (project ? getThumbnail(project) : null))
       .filter((src): src is string => Boolean(src));
 
     const preloads = urls.map((src) => {
@@ -354,35 +430,76 @@ export default function ProjectSlideshow({
         img.onerror = null;
       });
     };
-  }, [activeIndex, filmProjects, isPhotos]);
+  }, [activeIndex, deck, isPhotos]);
 
-  const current = filmProjects[activeIndex];
+  const loaderSrcs = useMemo(
+    () =>
+      musicVideoProjects
+        .map((p) => p.images[0]?.src || getMuxThumbnail(p.muxPlaybackId))
+        .filter((src): src is string => Boolean(src))
+        .slice(0, 5),
+    [musicVideoProjects]
+  );
 
-  const formatLabel = (s: string) =>
-    s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const role =
+    current?.description?.replace(/<[^>]*>/g, "").trim().split("\n")[0] || "";
+  const showPlayCursor =
+    !isPhotos && cursorVisible && !cursorOverUI && !!current;
+
+  const sectionTab = (key: WorkSection, label: string) => {
+    const active = workSection === key;
+    const empty = sectionCounts[key] === 0;
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => switchSection(key)}
+        disabled={empty}
+        className={`flex items-baseline gap-2 text-sm sm:text-base uppercase tracking-[0.12em] transition-all duration-300 ${
+          active
+            ? "text-white"
+            : empty
+              ? "cursor-default text-white/20"
+              : "cursor-pointer text-white/35 hover:text-white/70"
+        }`}
+      >
+        <span>{label}</span>
+        {empty && (
+          <span className="text-[10px] uppercase tracking-[0.1em] opacity-45">
+            soon
+          </span>
+        )}
+      </button>
+    );
+  };
 
   return (
     <>
+      <LoadingScreen imageSrcs={loaderSrcs} />
       <div
         ref={containerRef}
-        className={`fixed inset-0 w-full h-full select-none ${isPhotos ? "overflow-y-auto cursor-default" : "overflow-hidden cursor-none"}`}
+        className={`fixed inset-0 h-full w-full select-none ${
+          isPhotos
+            ? "cursor-default overflow-y-auto"
+            : `overflow-hidden ${showPlayCursor ? "cursor-none" : "cursor-default"}`
+        }`}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
         onMouseMove={onMouseMove}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        {/* Custom play cursor — only in film mode */}
-        {!isPhotos && cursorVisible && !cursorOverUI && (
+        {/* Custom play cursor — only over slides that open the focus view */}
+        {showPlayCursor && (
           <div
-            className="fixed z-50 pointer-events-none"
+            className="pointer-events-none fixed z-50"
             style={{
               left: cursorPos.x,
               top: cursorPos.y,
               transform: "translate(-50%, -50%)",
             }}
           >
-            <div className="w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm">
               <svg width="18" height="20" viewBox="0 0 18 20" fill="none" className="ml-0.5">
                 <path d="M0 0L18 10L0 20V0Z" fill="white" fillOpacity="0.9" />
               </svg>
@@ -393,15 +510,52 @@ export default function ProjectSlideshow({
         {/* Background slides — always rendered, shrinks when photos open */}
         <div
           className="relative w-full transition-all duration-700 ease-in-out"
-          style={{ height: isPhotos ? "0" : "100vh" }}
+          style={{
+            height: isPhotos ? "0" : "100vh",
+            opacity: deckFading ? 0 : 1,
+            transition: `opacity ${SECTION_FADE_MS}ms ease-in-out, height 700ms ease-in-out`,
+          }}
         >
-          {filmProjects.map((project, i) => {
-            const thumb = getThumbnail(project);
-            if (!thumb) return null;
+          {deck.map((project, i) => {
             const isActive = i === activeIndex;
             const isNearby = Math.abs(i - activeIndex) <= 1;
             if (!isNearby) return null;
-            const showVideo = AUTOPLAY_PREVIEW && isActive && project.muxPlaybackId && !isPhotos && !railScrubbing;
+
+            if (isCampaign(project)) {
+              return (
+                <div
+                  key={project.slug}
+                  className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out"
+                  style={{
+                    opacity: isActive ? 1 : 0,
+                    zIndex: isActive ? 1 : 0,
+                    pointerEvents: isActive ? "auto" : "none",
+                  }}
+                >
+                  <CampaignRack
+                    project={project}
+                    cutIndex={isActive ? cutIndex : 0}
+                    isActive={isActive && !isPhotos && !railScrubbing}
+                    onCutSelect={selectCut}
+                    onActiveCutClick={() => {
+                      setFocusedCutIndex(cutIndex);
+                      setFocusedProject(project);
+                    }}
+                    onUIHover={setCursorOverUI}
+                  />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+              );
+            }
+
+            const thumb = getThumbnail(project);
+            if (!thumb && !project.placeholder) return null;
+            const showVideo =
+              AUTOPLAY_PREVIEW &&
+              isActive &&
+              project.muxPlaybackId &&
+              !isPhotos &&
+              !railScrubbing;
 
             return (
               <div
@@ -412,44 +566,71 @@ export default function ProjectSlideshow({
                   zIndex: isActive ? 1 : 0,
                 }}
               >
-                <ProgressiveImage
-                  src={thumb}
-                  alt={project.title}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                  priority={i <= 1}
-                  revealClassName="duration-[900ms] ease-out"
-                />
-                {showVideo && <SlideVideoPreview playbackId={project.muxPlaybackId!} startTime={AUTOPLAY_START_SECONDS} onPlaybackStarted={scheduleAutoAdvance} />}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+                {thumb ? (
+                  <ProgressiveImage
+                    src={thumb}
+                    alt={project.title}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    priority={i <= 1}
+                    revealClassName="duration-[900ms] ease-out"
+                  />
+                ) : (
+                  <PlaceholderFrame
+                    label="16:9 · placeholder"
+                    sublabel="Add a Mux playback ID to replace"
+                    hueSeed={project.slug.length}
+                  />
+                )}
+                {showVideo && (
+                  <SlideVideoPreview
+                    playbackId={project.muxPlaybackId!}
+                    startTime={AUTOPLAY_START_SECONDS}
+                    onPlaybackStarted={scheduleAutoAdvance}
+                  />
+                )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
               </div>
             );
           })}
 
-          {/* Slide overlay — title + click area (film mode only) */}
-          {!isPhotos && (
+          {/* Click layer — opens focus view (campaigns handle clicks in the rack) */}
+          {!isPhotos && current && !currentIsCampaign && (
             <div
-              className="absolute inset-0 z-10 flex flex-col cursor-none"
+              className="absolute inset-0 z-10 cursor-none"
               onClick={handleSlideClick}
+            />
+          )}
+
+          {/* Title + meta — anchored lower-left on the gradient scrim */}
+          {!isPhotos && current && (
+            <div
+              className="pointer-events-none absolute z-20"
+              style={{ left: EDGE_PAD, right: EDGE_PAD, bottom: 96 }}
             >
-              <div className="flex-1" />
-              {current && (
-                <div style={{ padding: `0 ${EDGE_PAD}px`, maxWidth: "50vw" }}>
-                  <h1 className="text-[clamp(1.8rem,4vw,3.75rem)] font-light leading-[1.05] tracking-[-0.02em] text-white/40 italic font-extralight">
-                    {current.title}
-                  </h1>
-                </div>
-              )}
-              <div className="flex-1" />
+              <h1
+                className="text-[clamp(1.6rem,3.2vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-white/90"
+                style={{
+                  maxWidth: "min(80vw, 720px)",
+                  textShadow: "0 1px 30px rgba(0,0,0,0.4)",
+                }}
+              >
+                {current.title}
+              </h1>
+              <div className="mt-2.5 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] text-white/50">
+                {role && <span>{role}</span>}
+                {role && current.year && <span className="opacity-40">·</span>}
+                {current.year && <span>{current.year}</span>}
+              </div>
             </div>
           )}
 
-          {/* Dot navigation (film mode only) */}
-          {!isPhotos && filmProjects.length > 1 && (
+          {/* Dot navigation rail */}
+          {!isPhotos && deck.length > 1 && (
             <div
               ref={railRef}
-              className="absolute top-1/2 -translate-y-1/2 z-20 flex touch-none flex-col items-center py-3"
+              className="absolute top-1/2 z-20 flex -translate-y-1/2 touch-none flex-col items-center py-3"
               style={{
                 right: "clamp(16px, 4vw, 48px)",
                 cursor: railScrubbing ? "grabbing" : "grab",
@@ -476,7 +657,7 @@ export default function ProjectSlideshow({
                 e.stopPropagation();
               }}
             >
-              {filmProjects.map((_, i) => (
+              {deck.map((project, i) => (
                 <button
                   key={i}
                   onClick={(e) => {
@@ -489,14 +670,17 @@ export default function ProjectSlideshow({
                     width: DOT_HIT_SIZE,
                     height: DOT_HIT_SIZE,
                   }}
-                  aria-label={`Go to project ${i + 1}`}
+                  aria-label={`Go to project ${i + 1}${isCampaign(project) ? ` (campaign, ${project.videos.length} cuts)` : ""}`}
                 >
                   <span
                     className="block rounded-full transition-[background-color,opacity,transform] duration-200 ease-out"
                     style={{
                       width: i === activeIndex ? 7 : 5,
                       height: i === activeIndex ? 7 : 5,
-                      background: i === activeIndex ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.34)",
+                      background:
+                        i === activeIndex
+                          ? "rgba(255,255,255,0.95)"
+                          : "rgba(255,255,255,0.34)",
                       opacity: i === activeIndex ? 1 : 0.82,
                       transform: `scale(${getDotScale(i)})`,
                       transformOrigin: "center",
@@ -523,7 +707,7 @@ export default function ProjectSlideshow({
           )}
         </div>
 
-        {/* Bottom bar — filters (always visible, fixed) */}
+        {/* Bottom bar — section nav (left) + index (right) */}
         <div
           className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between"
           onClick={(e) => e.stopPropagation()}
@@ -533,70 +717,47 @@ export default function ProjectSlideshow({
             padding: `0 24px`,
             paddingBottom: 24,
             cursor: "default",
-            background: isPhotos ? "linear-gradient(to top, var(--color-bg) 60%, transparent)" : undefined,
+            background: isPhotos
+              ? "linear-gradient(to top, var(--color-bg) 60%, transparent)"
+              : undefined,
           }}
         >
-          {/* Left — FILM / PHOTOGRAPHY (hidden when photo section disabled) */}
-          {SHOW_PHOTO_SECTION ? (
-            <nav className="flex gap-7">
-              {(["film", "photography"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setMediaFilter(f)}
-                  className={`
-                  text-sm sm:text-base tracking-[0.12em] uppercase cursor-pointer transition-all duration-300 pb-0.5
-                  ${mediaFilter === f
-                      ? `${isPhotos ? "text-[var(--color-text)]" : "text-white"} border-b ${isPhotos ? "border-[var(--color-text)]" : "border-white"}`
-                      : `${isPhotos ? "text-[var(--color-text-muted)]" : "text-white/35"} border-b border-transparent ${isPhotos ? "hover:text-[var(--color-text)]" : "hover:text-white/60"}`
+          <div className="flex items-end gap-8">
+            {SHOW_PHOTO_SECTION && (
+              <nav className="flex gap-7">
+                {(["film", "photography"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setMediaFilter(f)}
+                    className={`
+                    cursor-pointer border-b pb-0.5 text-sm uppercase tracking-[0.12em] transition-all duration-300
+                    ${
+                      mediaFilter === f
+                        ? `${isPhotos ? "text-[var(--color-text)]" : "text-white"} ${isPhotos ? "border-[var(--color-text)]" : "border-white"}`
+                        : `${isPhotos ? "text-[var(--color-text-muted)]" : "text-white/35"} border-transparent ${isPhotos ? "hover:text-[var(--color-text)]" : "hover:text-white/60"}`
                     }
-                `}
-                >
-                  {f}
-                </button>
-              ))}
-            </nav>
-          ) : <div />}
+                  `}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </nav>
+            )}
+            {!isPhotos && (
+              <nav className="flex items-end gap-7">
+                {sectionTab("music-videos", "Music Videos")}
+                {sectionTab("commercials", "Commercial")}
+              </nav>
+            )}
+          </div>
 
-          {/* Right — category filters */}
-          <nav className="flex gap-4 sm:gap-7 flex-wrap">
-            {mediaFilter === "film"
-              ? visibleFilmCategories.map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setFilmCategory(key)}
-                  className={`
-                    text-sm sm:text-base tracking-[0.12em] uppercase cursor-pointer transition-all duration-300
-                    ${filmCategory === key
-                      ? "text-white"
-                      : "text-white/35 hover:text-white/60"
-                    }
-                  `}
-                >
-                  {formatLabel(key)}
-                </button>
-              ))
-              : PHOTO_CATEGORIES.map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setPhotoCategory(key)}
-                  className={`
-                    text-sm sm:text-base tracking-[0.12em] uppercase cursor-pointer transition-all duration-300
-                    ${photoCategory === key
-                      ? "text-[var(--color-text)]"
-                      : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                    }
-                  `}
-                >
-                  {formatLabel(key)}
-                </button>
-              ))}
-          </nav>
         </div>
 
         {/* Focus View Modal — client-side */}
         {focusedProject && (
           <FocusViewModal
             project={focusedProject}
+            cutIndex={focusedCutIndex}
             onClose={() => setFocusedProject(null)}
           />
         )}

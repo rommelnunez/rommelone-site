@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
-import { useEffect, useState, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 
 type ProgressiveImageProps = ImageProps & {
   revealClassName?: string;
@@ -15,9 +15,11 @@ export default function ProgressiveImage({
   ...props
 }: ProgressiveImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    setLoaded(false);
+    const image = imageRef.current;
+    setLoaded(Boolean(image?.complete && image.naturalWidth > 0));
   }, [src]);
 
   const handleLoad = (event: SyntheticEvent<HTMLImageElement>) => {
@@ -28,6 +30,7 @@ export default function ProgressiveImage({
   return (
     <Image
       {...props}
+      ref={imageRef}
       src={src}
       onLoad={handleLoad}
       decoding="async"

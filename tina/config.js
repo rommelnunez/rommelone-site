@@ -81,6 +81,53 @@ export default defineConfig({
             description: "The Mux playback ID for this video project. Find it in your Mux dashboard.",
           },
           {
+            type: "object",
+            name: "videos",
+            label: "Campaign Videos",
+            description: "For multi-video campaigns (e.g. 2-5 vertical cuts). When set, the project renders as a campaign rack instead of a single video.",
+            list: true,
+            ui: {
+              itemProps: (item) => {
+                return { label: item?.label || item?.mux_playback_id };
+              },
+            },
+            fields: [
+              {
+                type: "string",
+                name: "mux_playback_id",
+                label: "Mux Playback ID",
+                description: "The Mux playback ID for this cut.",
+              },
+              {
+                type: "string",
+                name: "aspect",
+                label: "Aspect Ratio",
+                options: [
+                  { value: "9x16", label: "Vertical (9:16)" },
+                  { value: "16x9", label: "Horizontal (16:9)" },
+                ],
+              },
+              {
+                type: "string",
+                name: "label",
+                label: "Label",
+                description: "Deliverable label, e.g. \"Hero — :30\" or \"Cutdown — :15\"",
+              },
+              {
+                type: "image",
+                name: "poster",
+                label: "Poster Still",
+                description: "Optional custom still shown before this cut begins playing.",
+              },
+            ],
+          },
+          {
+            type: "boolean",
+            name: "placeholder",
+            label: "Placeholder",
+            description: "Render placeholder frames instead of video (for previewing layout before assets exist)",
+          },
+          {
             type: "number",
             name: "year",
             label: "Year",

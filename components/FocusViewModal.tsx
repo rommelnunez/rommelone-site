@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
@@ -11,22 +11,44 @@ import FocusViewCarousel, { buildCarouselItems } from "./FocusViewCarousel";
 import { getMuxThumbnail } from "@/lib/mux";
 import type { Project } from "@/lib/types";
 import ProgressiveImage from "./ProgressiveImage";
+import PlaceholderFrame from "./PlaceholderFrame";
 
 const EDGE_PAD = 48;
 const HIDE_UI_DELAY = 3000;
 
 interface FocusViewModalProps {
   project: Project;
+  /** For campaign projects: which cut to focus */
+  cutIndex?: number;
   onClose?: () => void;
 }
 
-export default function FocusViewModal({ project, onClose }: FocusViewModalProps) {
+export default function FocusViewModal({ project, cutIndex = 0, onClose }: FocusViewModalProps) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const playerRef = useRef<any>(null);
+
+  const cut =
+    project.videos.length > 0
+      ? project.videos[Math.min(cutIndex, project.videos.length - 1)]
+      : null;
+  const playbackId = cut ? cut.playbackId : project.muxPlaybackId;
+
+  const videoThumb = cut?.poster || getMuxThumbnail(playbackId);
+  const carouselItems = buildCarouselItems(
+    playbackId,
+    project.images,
+    videoThumb
+  );
+
+  const isVideo = !!playbackId;
+  // Placeholders get the full player chrome so the interaction matches
+  // what real videos will do once playback IDs are added
+  const videoLike = isVideo || project.placeholder;
+
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(!isVideo && videoLike);
   const [muted, setMuted] = useState(true);
   const [uiVisible, setUiVisible] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -35,22 +57,42 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [cursorOverUI, setCursorOverUI] = useState(false);
+  const [creditsOpen, setCreditsOpen] = useState(false);
+  const creditsOpenRef = useRef(false);
+  creditsOpenRef.current = creditsOpen;
 
-  const videoThumb = getMuxThumbnail(project.muxPlaybackId);
-  const carouselItems = buildCarouselItems(
-    project.muxPlaybackId,
-    project.images,
-    videoThumb
-  );
+  // Parse the markdown body into credit rows ("Role: Name" per line)
+  const credits = useMemo(() => {
+    const clean = (project.body || "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/[*_#>`]/g, "");
+    return clean
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const idx = line.indexOf(":");
+        if (idx > 0 && idx < line.length - 1) {
+          return {
+            role: line.slice(0, idx).trim(),
+            name: line.slice(idx + 1).trim(),
+          };
+        }
+        return { role: "", name: line };
+      });
+  }, [project.body]);
+  const hasCredits = credits.length > 0;
 
-  const isVideo = !!project.muxPlaybackId;
   const currentItem = carouselItems[activeIndex] || carouselItems[0];
   const showingVideo = activeIndex === 0 && isVideo;
+  const showChrome = showingVideo || (videoLike && !isVideo);
 
   const resetHideTimer = useCallback(() => {
     setUiVisible(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setUiVisible(false), HIDE_UI_DELAY);
+    hideTimer.current = setTimeout(() => {
+      if (!creditsOpenRef.current) setUiVisible(false);
+    }, HIDE_UI_DELAY);
   }, []);
 
   useEffect(() => {
@@ -84,7 +126,8 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        close();
+        if (creditsOpenRef.current) setCreditsOpen(false);
+        else close();
       }
       if (e.key === " ") {
         e.preventDefault();
@@ -103,20 +146,26 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
 
   const togglePlay = () => {
     const vid = getVideo();
-    if (!vid) return;
+    if (!vid) {
+      if (videoLike) setPlaying((p) => !p);
+      return;
+    }
     if (vid.paused) vid.play();
     else vid.pause();
   };
 
   const toggleMute = () => {
     const vid = getVideo();
-    if (!vid) return;
+    if (!vid) {
+      if (videoLike) setMuted((m) => !m);
+      return;
+    }
     vid.muted = !vid.muted;
     setMuted(vid.muted);
   };
 
   const toggleFullscreen = () => {
-    const el = playerRef.current;
+    const el = playerRef.current ?? dialogRef.current;
     if (!el) return;
     if (document.fullscreenElement) document.exitFullscreen();
     else el.requestFullscreen?.();
@@ -165,13 +214,13 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
       onClose={close}
     >
       <div
-        className="relative h-screen cursor-none"
+        className={`relative h-screen ${videoLike ? "cursor-none" : "cursor-default"}`}
         style={{ opacity: visible ? 1 : 0, transition: "opacity 0.5s ease-in-out" }}
         onMouseMove={onMouseMove}
         onMouseEnter={() => setCursorVisible(true)}
         onMouseLeave={() => setCursorVisible(false)}
       >
-        {cursorVisible && !cursorOverUI && (
+        {videoLike && cursorVisible && !cursorOverUI && (
           <div
             className="fixed z-50 pointer-events-none"
             style={{
@@ -201,7 +250,8 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
           {showingVideo ? (
             <MuxPlayer
               ref={playerRef}
-              playbackId={project.muxPlaybackId!}
+              playbackId={playbackId!}
+              poster={cut?.poster}
               autoPlay="muted"
               muted={muted}
               streamType="on-demand"
@@ -225,6 +275,22 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
                 priority
               />
             </div>
+          ) : project.placeholder ? (
+            <div className="flex h-full w-full items-center justify-center p-12">
+              <div
+                style={
+                  cut
+                    ? { height: "84%", aspectRatio: "9 / 16" }
+                    : { width: "min(84%, 1280px)", aspectRatio: "16 / 9" }
+                }
+              >
+                <PlaceholderFrame
+                  index={cut ? cutIndex : undefined}
+                  sublabel={cut ? "9:16 · placeholder" : "16:9 · placeholder"}
+                  hueSeed={project.slug.length + cutIndex}
+                />
+              </div>
+            </div>
           ) : null}
         </div>
 
@@ -247,6 +313,54 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
           </button>
         </div>
 
+        {/* Credits panel — slides in from the right */}
+        {hasCredits && (
+          <div
+            className="absolute bottom-0 right-0 top-0 z-[25] overflow-y-auto"
+            style={{
+              width: "min(420px, 88vw)",
+              background: "rgba(0,0,0,0.72)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              transform: creditsOpen ? "translateX(0)" : "translateX(100%)",
+              transition: "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)",
+              pointerEvents: creditsOpen ? "auto" : "none",
+              cursor: "default",
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={() => setCursorOverUI(true)}
+            onMouseLeave={() => setCursorOverUI(false)}
+          >
+            <div style={{ padding: "96px 40px 72px" }}>
+              <h2 className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                Credits
+              </h2>
+              <p className="mt-1.5 text-sm text-white/85">{project.title}</p>
+              <div className="mt-8">
+                {credits.map((c, i) =>
+                  c.role ? (
+                    <div
+                      key={i}
+                      className="flex items-baseline justify-between gap-6 border-b border-white/[0.06] py-2"
+                    >
+                      <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                        {c.role}
+                      </span>
+                      <span className="text-right text-[13px] leading-snug text-white/85">
+                        {c.name}
+                      </span>
+                    </div>
+                  ) : (
+                    <p key={i} className="py-2 text-[13px] text-white/70">
+                      {c.name}
+                    </p>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div
           className="absolute bottom-0 left-0 right-0 z-20"
           onMouseEnter={() => setCursorOverUI(true)}
@@ -258,7 +372,7 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
             cursor: "default",
           }}
         >
-          {showingVideo && (
+          {showChrome && (
             <div
               className="w-full cursor-pointer"
               style={{ height: 1, background: "rgba(255,255,255,0.2)" }}
@@ -278,14 +392,29 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
             className="flex items-center justify-between"
             style={{ padding: `16px ${EDGE_PAD}px`, paddingBottom: EDGE_PAD / 2 }}
           >
-            {showingVideo ? (
-              <button
-                onClick={togglePlay}
-                className="text-white/60 hover:text-white text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors"
-              >
-                {playing ? "Pause" : "Play"}
-              </button>
-            ) : <div />}
+            <div className="flex items-center gap-5">
+              {showChrome && (
+                <button
+                  onClick={togglePlay}
+                  className="text-white/60 hover:text-white text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors"
+                >
+                  {playing ? "Pause" : "Play"}
+                </button>
+              )}
+              {hasCredits && (
+                <button
+                  onClick={() => {
+                    setCreditsOpen((o) => !o);
+                    resetHideTimer();
+                  }}
+                  className={`text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors focus:outline-none ${
+                    creditsOpen ? "text-white" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  {creditsOpen ? "Close Credits" : "Credits"}
+                </button>
+              )}
+            </div>
 
             <div className="text-center">
               <span className="text-white/40 text-xs tracking-[0.1em]">
@@ -298,7 +427,7 @@ export default function FocusViewModal({ project, onClose }: FocusViewModalProps
               </span>
             </div>
 
-            {showingVideo ? (
+            {showChrome ? (
               <div className="flex items-center gap-5">
                 <button
                   onClick={toggleMute}

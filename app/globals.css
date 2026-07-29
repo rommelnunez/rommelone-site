@@ -34,6 +34,13 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
 a {
   color: var(--color-link);
   text-decoration: none;
@@ -44,6 +51,16 @@ dialog.focus-view::backdrop {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 /* Hide scrollbars globally */
@@ -58,6 +75,13 @@ html {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Signature ident — draws in left to right */
+@keyframes sig-reveal {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 /* Force Mux player videos to fill container height */
