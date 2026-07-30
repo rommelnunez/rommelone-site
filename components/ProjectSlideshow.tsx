@@ -112,6 +112,26 @@ export default function ProjectSlideshow({
     userNavRef.current = false;
   }, [activeIndex, workSection]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const campaignIsActive = currentIsCampaign && !isPhotos;
+    root.classList.toggle("campaign-active", campaignIsActive);
+
+    if (campaignIsActive) {
+      root.style.setProperty("--page-chrome-color", "#101010");
+      root.style.setProperty("--page-chrome-icon-filter", "invert(1)");
+    } else {
+      root.style.removeProperty("--page-chrome-color");
+      root.style.removeProperty("--page-chrome-icon-filter");
+    }
+
+    return () => {
+      root.classList.remove("campaign-active");
+      root.style.removeProperty("--page-chrome-color");
+      root.style.removeProperty("--page-chrome-icon-filter");
+    };
+  }, [currentIsCampaign, isPhotos]);
+
   // Clamp index when deck shrinks
   useEffect(() => {
     if (activeIndex >= deck.length && deck.length > 0) {
@@ -457,10 +477,16 @@ export default function ProjectSlideshow({
         disabled={empty}
         className={`flex items-baseline gap-2 text-sm sm:text-base uppercase tracking-[0.12em] transition-all duration-300 ${
           active
-            ? "text-white"
+            ? currentIsCampaign
+              ? "text-black"
+              : "text-white"
             : empty
-              ? "cursor-default text-white/20"
-              : "cursor-pointer text-white/35 hover:text-white/70"
+              ? currentIsCampaign
+                ? "cursor-default text-black/20"
+                : "cursor-default text-white/20"
+              : currentIsCampaign
+                ? "cursor-pointer text-black/35 hover:text-black/70"
+                : "cursor-pointer text-white/35 hover:text-white/70"
         }`}
       >
         <span>{label}</span>
@@ -492,7 +518,9 @@ export default function ProjectSlideshow({
         {/* Custom play cursor — only over slides that open the focus view */}
         {showPlayCursor && (
           <div
-            className="pointer-events-none fixed z-50"
+            className={`pointer-events-none fixed z-50 ${
+              currentIsCampaign ? "campaign-adaptive-chrome" : ""
+            }`}
             style={{
               left: cursorPos.x,
               top: cursorPos.y,
@@ -543,7 +571,6 @@ export default function ProjectSlideshow({
                     }}
                     onUIHover={setCursorOverUI}
                   />
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
               );
             }
@@ -606,19 +633,29 @@ export default function ProjectSlideshow({
           {/* Title + meta — anchored lower-left on the gradient scrim */}
           {!isPhotos && current && (
             <div
-              className="pointer-events-none absolute z-20"
+              className={`pointer-events-none absolute z-20 ${
+                currentIsCampaign ? "campaign-adaptive-chrome" : ""
+              }`}
               style={{ left: EDGE_PAD, right: EDGE_PAD, bottom: 96 }}
             >
               <h1
-                className="text-[clamp(1.6rem,3.2vw,3rem)] font-light leading-[1.05] tracking-[-0.02em] text-white/90"
+                className={`text-[clamp(1rem,2.2vw,2rem)] font-light leading-[1.05] tracking-[-0.02em] ${
+                  currentIsCampaign ? "text-black/90" : "text-white/90"
+                }`}
                 style={{
-                  maxWidth: "min(80vw, 720px)",
-                  textShadow: "0 1px 30px rgba(0,0,0,0.4)",
+                  maxWidth: "min(80vw, 400px)",
+                  textShadow: currentIsCampaign
+                    ? "none"
+                    : "0 1px 30px rgba(0,0,0,0.4)",
                 }}
               >
                 {current.title}
               </h1>
-              <div className="mt-2.5 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] text-white/50">
+              <div
+                className={`mt-2.5 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] ${
+                  currentIsCampaign ? "text-black/50" : "text-white/50"
+                }`}
+              >
                 {role && <span>{role}</span>}
                 {role && current.year && <span className="opacity-40">·</span>}
                 {current.year && <span>{current.year}</span>}
@@ -630,7 +667,9 @@ export default function ProjectSlideshow({
           {!isPhotos && deck.length > 1 && (
             <div
               ref={railRef}
-              className="absolute top-1/2 z-20 flex -translate-y-1/2 touch-none flex-col items-center py-3"
+              className={`absolute top-1/2 z-20 flex -translate-y-1/2 touch-none flex-col items-center py-3 ${
+                currentIsCampaign ? "campaign-adaptive-chrome" : ""
+              }`}
               style={{
                 right: "clamp(16px, 4vw, 48px)",
                 cursor: railScrubbing ? "grabbing" : "grab",
@@ -679,8 +718,12 @@ export default function ProjectSlideshow({
                       height: i === activeIndex ? 7 : 5,
                       background:
                         i === activeIndex
-                          ? "rgba(255,255,255,0.95)"
-                          : "rgba(255,255,255,0.34)",
+                          ? currentIsCampaign
+                            ? "rgba(0,0,0,0.9)"
+                            : "rgba(255,255,255,0.95)"
+                          : currentIsCampaign
+                            ? "rgba(0,0,0,0.28)"
+                            : "rgba(255,255,255,0.34)",
                       opacity: i === activeIndex ? 1 : 0.82,
                       transform: `scale(${getDotScale(i)})`,
                       transformOrigin: "center",
@@ -709,7 +752,9 @@ export default function ProjectSlideshow({
 
         {/* Bottom bar — section nav (left) + index (right) */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between"
+          className={`fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between ${
+            currentIsCampaign ? "campaign-adaptive-chrome" : ""
+          }`}
           onClick={(e) => e.stopPropagation()}
           onMouseEnter={() => setCursorOverUI(true)}
           onMouseLeave={() => setCursorOverUI(false)}

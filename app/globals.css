@@ -63,6 +63,18 @@ dialog.focus-view::backdrop {
   }
 }
 
+/*
+ * Portrait campaign view: when the 9:16 video fills the viewport, turn the
+ * surrounding interface into a live inverse of the pixels beneath it.
+ */
+@media (max-aspect-ratio: 2 / 3) {
+  html.campaign-active header,
+  html.campaign-active .campaign-adaptive-chrome {
+    filter: invert(1);
+    mix-blend-mode: difference;
+  }
+}
+
 /* Hide scrollbars globally */
 ::-webkit-scrollbar {
   display: none;

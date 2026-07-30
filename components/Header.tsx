@@ -25,7 +25,10 @@ export default function Header({
     >
       {/* Left — brand */}
       <Link href="/" className="pointer-events-auto no-underline">
-        <span className="text-2xl sm:text-3xl font-light tracking-[0.08em] lowercase text-white">
+        <span
+          className="text-2xl sm:text-3xl font-light tracking-[0.08em] lowercase"
+          style={{ color: "var(--page-chrome-color, #ffffff)" }}
+        >
           {title.toLowerCase()}
         </span>
       </Link>
@@ -43,7 +46,7 @@ export default function Header({
               alt="Email"
               width={22}
               height={22}
-              className="invert-0"
+              style={{ filter: "var(--page-chrome-icon-filter, none)" }}
               unoptimized
             />
           </a>
@@ -61,7 +64,7 @@ export default function Header({
               alt="Instagram"
               width={22}
               height={22}
-              className="invert-0"
+              style={{ filter: "var(--page-chrome-icon-filter, none)" }}
               unoptimized
             />
           </a>
@@ -79,7 +82,7 @@ export default function Header({
               alt="IMDb"
               width={34}
               height={22}
-              className="invert-0"
+              style={{ filter: "var(--page-chrome-icon-filter, none)" }}
               unoptimized
             />
           </a>

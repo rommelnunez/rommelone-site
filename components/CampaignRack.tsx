@@ -36,42 +36,9 @@ export default function CampaignRack({
 
   return (
     <div
-      className="absolute inset-0 cursor-none overflow-hidden"
+      className="absolute inset-0 cursor-none overflow-hidden bg-white"
       onClick={onActiveCutClick}
     >
-      {/* Ambient backdrop — one layer per cut, crossfaded */}
-      {cuts.map((cut, i) => {
-        const thumb =
-          cut.poster ||
-          (cut.playbackId ? getMuxThumbnail(cut.playbackId, 320) : null);
-        const hue = (((hueSeed + i) * 47) % 360 + 200) % 360;
-        return (
-          <div
-            key={`bg-${i}`}
-            className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out"
-            style={{ opacity: i === cutIndex ? 1 : 0 }}
-            aria-hidden
-          >
-            {thumb ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={thumb}
-                alt=""
-                className="absolute inset-0 h-full w-full scale-110 object-cover blur-3xl"
-              />
-            ) : (
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `radial-gradient(110% 90% at 30% 0%, hsl(${hue} 30% 16%) 0%, hsl(${(hue + 40) % 360} 16% 7%) 55%, #08080a 100%)`,
-                }}
-              />
-            )}
-          </div>
-        );
-      })}
-      <div className="absolute inset-0 bg-black/55" />
-
       {/* Rack of vertical cuts */}
       <div
         className="absolute inset-0"
