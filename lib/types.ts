@@ -20,6 +20,7 @@ export interface Project {
   slug: string;
   title: string;
   description: string;
+  accessPassword?: string;
   muxPlaybackId: string | null;
   videos: ProjectVideo[];
   placeholder: boolean;

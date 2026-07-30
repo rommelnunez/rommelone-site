@@ -17,6 +17,7 @@ function parseProject(filePath: string): Project | null {
     slug: slugify(data.title),
     title: data.title,
     description: data.description || "",
+    accessPassword: data.access_password || undefined,
     muxPlaybackId: data.mux_playback_id || null,
     videos: (data.videos || [])
       .filter((v: { mux_playback_id?: string; label?: string } | null) => v)

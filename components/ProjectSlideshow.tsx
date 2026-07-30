@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import type { FormEvent } from "react";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
 import SlideVideoPreview from "./SlideVideoPreview";
@@ -46,6 +47,9 @@ export default function ProjectSlideshow({
   const [activeIndex, setActiveIndex] = useState(0);
   const [cutIndex, setCutIndex] = useState(0);
   const [deckFading, setDeckFading] = useState(false);
+  const [unlockedProjects, setUnlockedProjects] = useState<string[]>([]);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
   const locked = useRef(false);
   const touchStart = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,6 +95,9 @@ export default function ProjectSlideshow({
   const deck = workSection === "commercials" ? commercialProjects : musicVideoProjects;
   const current = deck[activeIndex];
   const currentIsCampaign = current ? isCampaign(current) : false;
+  const currentIsProtected = Boolean(
+    current?.accessPassword && !unlockedProjects.includes(current.slug)
+  );
 
   const sectionCounts = {
     "music-videos": musicVideoProjects.length,
@@ -111,6 +118,11 @@ export default function ProjectSlideshow({
     setCutIndex(0);
     userNavRef.current = false;
   }, [activeIndex, workSection]);
+
+  useEffect(() => {
+    setPasswordInput("");
+    setPasswordError(false);
+  }, [current?.slug]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -168,7 +180,7 @@ export default function ProjectSlideshow({
 
   // ─── Auto-advance (timer-driven): campaigns and placeholder slides ───
   useEffect(() => {
-    if (isPhotos || focusedProject || deckFading) return;
+    if (isPhotos || focusedProject || deckFading || currentIsProtected) return;
     const slide = deck[activeIndex];
     if (!slide) return;
     // Slides with a single preview video are handled by scheduleAutoAdvance
@@ -188,7 +200,15 @@ export default function ProjectSlideshow({
       }
     }, delay);
     return () => clearTimeout(timer);
-  }, [deck, activeIndex, cutIndex, isPhotos, focusedProject, deckFading]);
+  }, [
+    deck,
+    activeIndex,
+    cutIndex,
+    isPhotos,
+    focusedProject,
+    deckFading,
+    currentIsProtected,
+  ]);
 
   // ─── Navigation ───
   const advance = useCallback(
@@ -426,6 +446,22 @@ export default function ProjectSlideshow({
     }
   };
 
+  const handleCampaignUnlock = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!current?.accessPassword) return;
+
+    if (passwordInput === current.accessPassword) {
+      setUnlockedProjects((projects) =>
+        projects.includes(current.slug) ? projects : [...projects, current.slug]
+      );
+      setPasswordInput("");
+      setPasswordError(false);
+      return;
+    }
+
+    setPasswordError(true);
+  };
+
   const getThumbnail = (project: Project): string | null => {
     return project.images[0]?.src || getMuxThumbnail(project.muxPlaybackId);
   };
@@ -464,7 +500,11 @@ export default function ProjectSlideshow({
   const role =
     current?.description?.replace(/<[^>]*>/g, "").trim().split("\n")[0] || "";
   const showPlayCursor =
-    !isPhotos && cursorVisible && !cursorOverUI && !!current;
+    !isPhotos &&
+    !currentIsProtected &&
+    cursorVisible &&
+    !cursorOverUI &&
+    !!current;
 
   const sectionTab = (key: WorkSection, label: string) => {
     const active = workSection === key;
@@ -563,9 +603,15 @@ export default function ProjectSlideshow({
                   <CampaignRack
                     project={project}
                     cutIndex={isActive ? cutIndex : 0}
-                    isActive={isActive && !isPhotos && !railScrubbing}
+                    isActive={
+                      isActive &&
+                      !isPhotos &&
+                      !railScrubbing &&
+                      !currentIsProtected
+                    }
                     onCutSelect={selectCut}
                     onActiveCutClick={() => {
+                      if (currentIsProtected) return;
                       setFocusedCutIndex(cutIndex);
                       setFocusedProject(project);
                     }}
@@ -621,6 +667,65 @@ export default function ProjectSlideshow({
               </div>
             );
           })}
+
+          {!isPhotos && current && currentIsProtected && (
+            <div
+              className="absolute inset-0 z-[25] flex cursor-default items-center justify-center bg-black/20 px-6 backdrop-blur-[34px] backdrop-saturate-50"
+              onClick={(event) => event.stopPropagation()}
+              onMouseEnter={() => setCursorOverUI(true)}
+              onMouseLeave={() => setCursorOverUI(false)}
+            >
+              <form
+                className="w-full max-w-sm text-center text-white"
+                onSubmit={handleCampaignUnlock}
+              >
+                <p className="text-[10px] uppercase tracking-[0.24em] text-white/55">
+                  Private campaign
+                </p>
+                <h2
+                  id="campaign-password-title"
+                  className="mt-4 text-[clamp(1.35rem,3vw,2rem)] font-light leading-tight tracking-[-0.02em]"
+                >
+                  Enter password to view
+                </h2>
+                <div className="mt-8 flex items-center border-b border-white/55">
+                  <label className="sr-only" htmlFor="campaign-password">
+                    Password for {current.title}
+                  </label>
+                  <input
+                    id="campaign-password"
+                    type="password"
+                    value={passwordInput}
+                    onChange={(event) => {
+                      setPasswordInput(event.target.value);
+                      if (passwordError) setPasswordError(false);
+                    }}
+                    autoComplete="current-password"
+                    autoFocus
+                    placeholder="Password"
+                    aria-describedby="campaign-password-status"
+                    className="min-w-0 flex-1 bg-transparent py-3 text-base font-light tracking-[0.04em] text-white outline-none placeholder:text-white/40"
+                  />
+                  <button
+                    type="submit"
+                    className="px-1 py-3 text-xs uppercase tracking-[0.18em] text-white/75 transition-colors hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  >
+                    Enter
+                  </button>
+                </div>
+                <p
+                  id="campaign-password-status"
+                  className={`mt-3 min-h-4 text-[11px] tracking-[0.08em] transition-opacity ${
+                    passwordError ? "opacity-70" : "opacity-0"
+                  }`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  Password not recognized
+                </p>
+              </form>
+            </div>
+          )}
 
           {/* Click layer — opens focus view (campaigns handle clicks in the rack) */}
           {!isPhotos && current && !currentIsCampaign && (
