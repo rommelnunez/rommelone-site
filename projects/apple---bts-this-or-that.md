@@ -6,7 +6,7 @@ description: |
 project_type: commercial
 year: 2026
 position: 999
-access_password: apple
+access_password: 'Project Lava'
 date: 2026-07-29T23:10:00.000Z
 videos:
   - mux_playback_id: beIv5hvy2jNYaur3s1vFSonkq8RsWq1i9gvKWySBI6o
