@@ -674,6 +674,9 @@ export default function ProjectSlideshow({
               onClick={(event) => event.stopPropagation()}
               onMouseEnter={() => setCursorOverUI(true)}
               onMouseLeave={() => setCursorOverUI(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="campaign-password-title"
             >
               <form
                 className="w-full max-w-sm text-center text-white"
@@ -684,10 +687,13 @@ export default function ProjectSlideshow({
                 </p>
                 <h2
                   id="campaign-password-title"
-                  className="mt-4 text-[clamp(1.35rem,3vw,2rem)] font-light leading-tight tracking-[-0.02em]"
+                  className="mt-4 text-[clamp(1.55rem,3.5vw,2.4rem)] font-light leading-none tracking-[-0.03em]"
                 >
-                  Enter password to view
+                  {current.title.split(" – ")[0]}
                 </h2>
+                <p className="mt-3 text-sm font-light tracking-[0.02em] text-white/75">
+                  Enter password to view
+                </p>
                 <div className="mt-8 flex items-center border-b border-white/55">
                   <label className="sr-only" htmlFor="campaign-password">
                     Password for {current.title}
@@ -708,9 +714,15 @@ export default function ProjectSlideshow({
                   />
                   <button
                     type="submit"
-                    className="px-1 py-3 text-xs uppercase tracking-[0.18em] text-white/75 transition-colors hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
+                    className="group px-1 py-2 text-white/75 transition-colors hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white"
+                    aria-label="Unlock campaign"
                   >
-                    Enter
+                    <span
+                      aria-hidden="true"
+                      className="grid h-8 w-8 place-items-center rounded-full border border-current text-[18px] font-light leading-none transition-transform duration-300 group-hover:translate-x-0.5"
+                    >
+                      →
+                    </span>
                   </button>
                 </div>
                 <p

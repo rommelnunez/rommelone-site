@@ -9,16 +9,24 @@ position: 999
 access_password: apple
 date: 2026-07-29T23:10:00.000Z
 videos:
-  - mux_playback_id: VdptqpXBq7HUPfs01jvfPWZvs8YGlMqO8Dtr02AQKfOFk
+  - mux_playback_id: beIv5hvy2jNYaur3s1vFSonkq8RsWq1i9gvKWySBI6o
     aspect: 9x16
-    label: Cut 01
-    poster: 'https://image.mux.com/VdptqpXBq7HUPfs01jvfPWZvs8YGlMqO8Dtr02AQKfOFk/thumbnail.jpg?width=720&time=5'
-  - mux_playback_id: yGRiQyo801xYpkKRi01baogOTAlwCykWKGxInJhVvKefk
+    label: Film 1
+    poster: /uploads/apple-this-or-that-film-1.jpg
+  - mux_playback_id: gC8R8oCRaQURJVMc0102urtr28IrU4Y7jLvjvJkv001yOo
     aspect: 9x16
-    label: Cut 02
-    poster: 'https://image.mux.com/yGRiQyo801xYpkKRi01baogOTAlwCykWKGxInJhVvKefk/thumbnail.jpg?width=720&time=5'
-  - mux_playback_id: KFVTyIC1Giy00baQOMz5MuCVPv6gJTMjS02CMFGuy7qpQ
+    label: Film 2
+    poster: /uploads/apple-this-or-that-film-2.jpg
+  - mux_playback_id: Fg6BiqqmasHtTCs9jd01DSHMIiqYeXT8JWcj02VuvyUns
     aspect: 9x16
-    label: Cut 03
-    poster: 'https://image.mux.com/KFVTyIC1Giy00baQOMz5MuCVPv6gJTMjS02CMFGuy7qpQ/thumbnail.jpg?width=720&time=5'
+    label: Film 3
+    poster: /uploads/apple-this-or-that-film-3.jpg
+  - mux_playback_id: KltpuokMPhSZ6H56fsv29ArpWQtp6Y9GxLA01Fc5iM1g
+    aspect: 9x16
+    label: Film 4
+    poster: /uploads/apple-this-or-that-film-4.jpg
+  - mux_playback_id: hXCzW378UTQW5uumbMWXNKbCsJtWHtSFyaOvKe005Gac
+    aspect: 9x16
+    label: Film 5
+    poster: /uploads/apple-this-or-that-film-5.jpg
 ---
