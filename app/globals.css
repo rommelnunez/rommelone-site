@@ -80,15 +80,54 @@ dialog.focus-view::backdrop {
   }
 }
 
-/*
- * Portrait campaign view: when the 9:16 video fills the viewport, turn the
- * surrounding interface into a live inverse of the pixels beneath it.
- */
+html.campaign-active {
+  --page-chrome-color: #101010;
+  --page-chrome-icon-filter: invert(1);
+  --campaign-chrome-primary: rgba(16, 16, 16, 0.9);
+  --campaign-chrome-muted: rgba(16, 16, 16, 0.5);
+  --campaign-chrome-inactive: rgba(16, 16, 16, 0.35);
+  --campaign-chrome-hover: rgba(16, 16, 16, 0.7);
+  --campaign-dot-active: rgba(16, 16, 16, 0.9);
+  --campaign-dot-idle: rgba(16, 16, 16, 0.28);
+  --campaign-text-shadow: none;
+}
+
+.campaign-chrome-primary {
+  color: var(--campaign-chrome-primary);
+}
+
+.campaign-chrome-muted {
+  color: var(--campaign-chrome-muted);
+}
+
+.campaign-chrome-inactive {
+  color: var(--campaign-chrome-inactive);
+}
+
+.campaign-chrome-inactive:hover {
+  color: var(--campaign-chrome-hover);
+}
+
+.campaign-mobile-scrim {
+  display: none;
+}
+
+/* Match the music-video chrome when a portrait campaign fills the screen. */
 @media (max-aspect-ratio: 2 / 3) {
-  html.campaign-active header,
-  html.campaign-active .campaign-adaptive-chrome {
-    filter: invert(1);
-    mix-blend-mode: difference;
+  html.campaign-active {
+    --page-chrome-color: #ffffff;
+    --page-chrome-icon-filter: none;
+    --campaign-chrome-primary: rgba(255, 255, 255, 0.9);
+    --campaign-chrome-muted: rgba(255, 255, 255, 0.5);
+    --campaign-chrome-inactive: rgba(255, 255, 255, 0.35);
+    --campaign-chrome-hover: rgba(255, 255, 255, 0.7);
+    --campaign-dot-active: rgba(255, 255, 255, 0.95);
+    --campaign-dot-idle: rgba(255, 255, 255, 0.34);
+    --campaign-text-shadow: 0 1px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .campaign-mobile-scrim {
+    display: block;
   }
 }
 

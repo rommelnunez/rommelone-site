@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
 import SlideVideoPreview from "./SlideVideoPreview";
@@ -40,15 +39,7 @@ export default function CampaignRack({
       onClick={onActiveCutClick}
     >
       {/* Rack of vertical cuts */}
-      <div
-        className="absolute inset-0"
-        style={
-          {
-            "--fh": "100dvh",
-            "--fw": "calc(var(--fh) * 0.5625)",
-          } as CSSProperties
-        }
-      >
+      <div className="absolute inset-0">
         {cuts.map((cut, i) => {
           const offset = i - cutIndex;
           const isCurrent = offset === 0;
@@ -76,9 +67,10 @@ export default function CampaignRack({
               style={{
                 left: "50%",
                 top: "50%",
-                width: "var(--fw)",
-                height: "var(--fh)",
-                transform: `translate(-50%, -50%) translateX(calc((var(--fw) + ${RACK_GAP}px) * ${offset})) scale(${isCurrent ? 1 : FLANK_SCALE})`,
+                width: "auto",
+                height: "100%",
+                aspectRatio: "9 / 16",
+                transform: `translate(-50%, -50%) translateX(calc((100% + ${RACK_GAP}px) * ${offset})) scale(${isCurrent ? 1 : FLANK_SCALE})`,
                 opacity: isCurrent ? 1 : Math.abs(offset) === 1 ? 0.4 : 0.08,
                 transition: `transform 700ms ${RACK_EASE}, opacity 700ms ${RACK_EASE}`,
                 cursor: isCurrent ? "none" : "pointer",

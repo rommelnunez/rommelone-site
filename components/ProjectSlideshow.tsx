@@ -129,18 +129,8 @@ export default function ProjectSlideshow({
     const campaignIsActive = currentIsCampaign && !isPhotos;
     root.classList.toggle("campaign-active", campaignIsActive);
 
-    if (campaignIsActive) {
-      root.style.setProperty("--page-chrome-color", "#101010");
-      root.style.setProperty("--page-chrome-icon-filter", "invert(1)");
-    } else {
-      root.style.removeProperty("--page-chrome-color");
-      root.style.removeProperty("--page-chrome-icon-filter");
-    }
-
     return () => {
       root.classList.remove("campaign-active");
-      root.style.removeProperty("--page-chrome-color");
-      root.style.removeProperty("--page-chrome-icon-filter");
     };
   }, [currentIsCampaign, isPhotos]);
 
@@ -518,14 +508,14 @@ export default function ProjectSlideshow({
         className={`flex items-baseline gap-2 text-sm sm:text-base uppercase tracking-[0.12em] transition-all duration-300 ${
           active
             ? currentIsCampaign
-              ? "text-black"
+              ? "campaign-chrome-primary"
               : "text-white"
             : empty
               ? currentIsCampaign
-                ? "cursor-default text-black/20"
+                ? "campaign-chrome-inactive cursor-default opacity-55"
                 : "cursor-default text-white/20"
               : currentIsCampaign
-                ? "cursor-pointer text-black/35 hover:text-black/70"
+                ? "campaign-chrome-inactive cursor-pointer"
                 : "cursor-pointer text-white/35 hover:text-white/70"
         }`}
       >
@@ -669,6 +659,10 @@ export default function ProjectSlideshow({
             );
           })}
 
+          {!isPhotos && currentIsCampaign && (
+            <div className="campaign-mobile-scrim pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+          )}
+
           {!isPhotos && current && currentIsProtected && (
             <div
               className="absolute inset-0 z-[25] flex cursor-default items-center justify-center bg-black/20 px-6 backdrop-blur-[34px] backdrop-saturate-50"
@@ -758,12 +752,12 @@ export default function ProjectSlideshow({
             >
               <h1
                 className={`text-[clamp(1rem,2.2vw,2rem)] font-light leading-[1.05] tracking-[-0.02em] ${
-                  currentIsCampaign ? "text-black/90" : "text-white/90"
+                  currentIsCampaign ? "campaign-chrome-primary" : "text-white/90"
                 }`}
                 style={{
                   maxWidth: "min(80vw, 400px)",
                   textShadow: currentIsCampaign
-                    ? "none"
+                    ? "var(--campaign-text-shadow)"
                     : "0 1px 30px rgba(0,0,0,0.4)",
                 }}
               >
@@ -771,7 +765,7 @@ export default function ProjectSlideshow({
               </h1>
               <div
                 className={`mt-2.5 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] ${
-                  currentIsCampaign ? "text-black/50" : "text-white/50"
+                  currentIsCampaign ? "campaign-chrome-muted" : "text-white/50"
                 }`}
               >
                 {role && <span>{role}</span>}
@@ -837,10 +831,10 @@ export default function ProjectSlideshow({
                       background:
                         i === activeIndex
                           ? currentIsCampaign
-                            ? "rgba(0,0,0,0.9)"
+                            ? "var(--campaign-dot-active)"
                             : "rgba(255,255,255,0.95)"
                           : currentIsCampaign
-                            ? "rgba(0,0,0,0.28)"
+                            ? "var(--campaign-dot-idle)"
                             : "rgba(255,255,255,0.34)",
                       opacity: i === activeIndex ? 1 : 0.82,
                       transform: `scale(${getDotScale(i)})`,
