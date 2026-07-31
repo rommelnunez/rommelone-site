@@ -544,11 +544,12 @@ export default function ProjectSlideshow({
       <LoadingScreen imageSrcs={loaderSrcs} />
       <div
         ref={containerRef}
-        className={`fixed inset-0 h-full w-full select-none ${
+        className={`fixed inset-0 w-full select-none ${
           isPhotos
             ? "cursor-default overflow-y-auto"
             : `overflow-hidden ${showPlayCursor ? "cursor-none" : "cursor-default"}`
         }`}
+        style={{ height: "100dvh" }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
         onMouseMove={onMouseMove}
@@ -579,7 +580,7 @@ export default function ProjectSlideshow({
         <div
           className="relative w-full transition-all duration-700 ease-in-out"
           style={{
-            height: isPhotos ? "0" : "100vh",
+            height: isPhotos ? "0" : "100dvh",
             opacity: deckFading ? 0 : 1,
             transition: `opacity ${SECTION_FADE_MS}ms ease-in-out, height 700ms ease-in-out`,
           }}

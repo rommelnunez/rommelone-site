@@ -27,6 +27,11 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -44,6 +49,18 @@ textarea {
 a {
   color: var(--color-link);
   text-decoration: none;
+}
+
+.site-header {
+  padding: 48px;
+}
+
+@media (max-width: 640px), (max-height: 500px) {
+  .site-header {
+    padding: max(20px, env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right)) 20px
+      max(20px, env(safe-area-inset-left));
+  }
 }
 
 /* Focus View dialog backdrop */

@@ -20,8 +20,7 @@ export default function Header({
 }: HeaderProps) {
   return (
     <header
-      className="pointer-events-none fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
-      style={{ padding: 48 }}
+      className="site-header pointer-events-none fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
     >
       {/* Left — brand */}
       <Link href="/" className="pointer-events-auto no-underline">
