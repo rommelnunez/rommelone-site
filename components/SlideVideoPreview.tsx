@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
@@ -20,10 +20,15 @@ export default function SlideVideoPreview({
 }: SlideVideoPreviewProps) {
   const [playing, setPlaying] = useState(false);
   const hasPlayed = useRef(false);
+  const startedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (startedTimer.current) clearTimeout(startedTimer.current);
+  }, []);
 
   return (
     <div
-      className="absolute inset-0 overflow-hidden transition-opacity duration-[1500ms] ease-in"
+      className="pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-[1500ms] ease-in"
       style={{ opacity: playing ? 1 : 0 }}
     >
       <MuxPlayer
@@ -38,7 +43,7 @@ export default function SlideVideoPreview({
             hasPlayed.current = true;
             setPlaying(true);
             if (onPlaybackStarted) {
-              setTimeout(onPlaybackStarted, 1500);
+              startedTimer.current = setTimeout(onPlaybackStarted, 1500);
             }
           }
         }}

@@ -13,6 +13,7 @@ const FLANK_SCALE = 0.9;
 interface CampaignRackProps {
   project: Project;
   cutIndex: number;
+  cutPosition?: number;
   /** Whether this slide is the active one in the deck (controls video playback) */
   isActive: boolean;
   onCutSelect: (i: number) => void;
@@ -25,6 +26,7 @@ interface CampaignRackProps {
 export default function CampaignRack({
   project,
   cutIndex,
+  cutPosition = cutIndex,
   isActive,
   onCutSelect,
   onActiveCutClick,
@@ -41,12 +43,12 @@ export default function CampaignRack({
       {/* Rack of vertical cuts */}
       <div className="absolute inset-0">
         {cuts.map((cut, i) => {
-          const offset = i - cutIndex;
-          const isCurrent = offset === 0;
+          const offset = i - cutPosition;
+          const isCurrent = i === cutIndex;
           const posterSrc =
             cut.poster ||
             (cut.playbackId ? getMuxThumbnail(cut.playbackId, 720) : null);
-          if (Math.abs(offset) > 2) return null;
+          if (Math.abs(offset) > 2.5) return null;
 
           return (
             <button
@@ -71,8 +73,8 @@ export default function CampaignRack({
                 height: "100%",
                 aspectRatio: "9 / 16",
                 transform: `translate(-50%, -50%) translateX(calc((100% + ${RACK_GAP}px) * ${offset})) scale(${isCurrent ? 1 : FLANK_SCALE})`,
-                opacity: isCurrent ? 1 : Math.abs(offset) === 1 ? 0.4 : 0.08,
-                transition: `transform 700ms ${RACK_EASE}, opacity 700ms ${RACK_EASE}`,
+                opacity: Math.max(0.08, 1 - Math.abs(offset) * 0.6),
+                transition: isActive ? `transform 700ms ${RACK_EASE}, opacity 700ms ${RACK_EASE}` : "none",
                 cursor: isCurrent ? "none" : "pointer",
                 zIndex: isCurrent ? 2 : 1,
                 boxShadow: isCurrent

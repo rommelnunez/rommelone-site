@@ -112,8 +112,8 @@ html.campaign-active {
   display: none;
 }
 
-/* Match the music-video chrome when a portrait campaign fills the screen. */
-@media (max-aspect-ratio: 2 / 3) {
+/* Match the music-video chrome throughout the mobile/touch experience. */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
   html.campaign-active {
     --page-chrome-color: #ffffff;
     --page-chrome-icon-filter: none;

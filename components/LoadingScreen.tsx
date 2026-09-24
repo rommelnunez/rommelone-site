@@ -1,52 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const MIN_DISPLAY_MS = 1400; // enough for the signature wipe to complete
-const MAX_WAIT_MS = 2500; // never block longer than this
+const MIN_DISPLAY_MS = 1400; // let the signature wipe complete on the first visit
+const MAX_WAIT_MS = 15000; // avoid a permanent black screen if an image fails
 const FADE_MS = 600;
+const READY_IMAGE_COUNT = 4;
 
-interface LoadingScreenProps {
-  imageSrcs: string[];
+export interface LoadingImage {
+  src: string;
+  sizes: string;
 }
 
-export default function LoadingScreen({ imageSrcs }: LoadingScreenProps) {
+interface LoadingScreenProps {
+  imageSrcs: LoadingImage[];
+  ready: boolean;
+  onComplete: () => void;
+}
+
+export default function LoadingScreen({ imageSrcs, ready, onComplete }: LoadingScreenProps) {
   const [phase, setPhase] = useState<"intro" | "fading" | "done">("intro");
+  const [targets, setTargets] = useState<LoadingImage[]>([]);
+  const started = useRef(false);
+  const finished = useRef(false);
+  const loaded = useRef(new Set<string>());
+  const minReadyAt = useRef(0);
+  const timers = useRef<number[]>([]);
+
+  const finish = useCallback(() => {
+    if (finished.current) return;
+    finished.current = true;
+    const wait = Math.max(0, minReadyAt.current - performance.now());
+    timers.current.push(window.setTimeout(() => {
+      setPhase("fading");
+      timers.current.push(window.setTimeout(() => {
+        setPhase("done");
+        onComplete();
+      }, FADE_MS));
+    }, wait));
+  }, [onComplete]);
 
   useEffect(() => {
-    // The ident plays once per session — skip on repeat views
-    if (sessionStorage.getItem("introSeen")) {
-      setPhase("done");
-      return;
-    }
+    if (!ready || started.current) return;
+    started.current = true;
+    const firstVisit = !sessionStorage.getItem("introSeen");
     sessionStorage.setItem("introSeen", "1");
+    minReadyAt.current = performance.now() + (firstVisit ? MIN_DISPLAY_MS : 0);
+    const selected = imageSrcs.slice(0, READY_IMAGE_COUNT);
+    setTargets(selected);
+    if (selected.length === 0) finish();
+    timers.current.push(window.setTimeout(finish, MAX_WAIT_MS));
+  }, [ready, imageSrcs, finish]);
 
-    const start = performance.now();
-    let finished = false;
+  useEffect(() => () => {
+    timers.current.forEach(clearTimeout);
+  }, []);
 
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      const wait = Math.max(0, MIN_DISPLAY_MS - (performance.now() - start));
-      window.setTimeout(() => {
-        setPhase("fading");
-        window.setTimeout(() => setPhase("done"), FADE_MS);
-      }, wait);
-    };
-
-    // Dissolve as soon as the first slide's poster is ready
-    const first = imageSrcs[0];
-    if (first) {
-      const img = new window.Image();
-      img.onload = finish;
-      img.onerror = finish;
-      img.src = first;
-    } else {
-      finish();
-    }
-    const fallback = window.setTimeout(finish, MAX_WAIT_MS);
-    return () => window.clearTimeout(fallback);
-  }, [imageSrcs]);
+  const handleLoad = (src: string) => {
+    loaded.current.add(src);
+    if (targets.length > 0 && loaded.current.size >= targets.length) finish();
+  };
 
   if (phase === "done") return null;
 
@@ -59,11 +73,25 @@ export default function LoadingScreen({ imageSrcs }: LoadingScreenProps) {
         pointerEvents: phase === "fading" ? "none" : "auto",
       }}
     >
+      {/* Use the same optimized image requests as the slides behind this screen. */}
+      <div className="pointer-events-none absolute inset-0 opacity-0" aria-hidden="true">
+        {targets.map(({ src, sizes }) => (
+          <Image
+            key={src}
+            src={src}
+            alt=""
+            fill
+            priority
+            sizes={sizes}
+            onLoad={() => handleLoad(src)}
+          />
+        ))}
+      </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="https://lkcg0hfyci0wodry.public.blob.vercel-storage.com/uploads/sig_black.PNG"
         alt=""
-        className="w-28 h-auto select-none invert sm:w-32"
+        className="relative w-28 h-auto select-none invert sm:w-32"
         draggable={false}
         style={{
           clipPath: "inset(0 100% 0 0)",

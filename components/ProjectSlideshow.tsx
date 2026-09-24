@@ -10,7 +10,7 @@ import FocusViewModal from "./FocusViewModal";
 import ProgressiveImage from "./ProgressiveImage";
 import CampaignRack from "./CampaignRack";
 import PlaceholderFrame from "./PlaceholderFrame";
-import LoadingScreen from "./LoadingScreen";
+import LoadingScreen, { type LoadingImage } from "./LoadingScreen";
 
 type MediaFilter = "film" | "photography";
 type WorkSection = "music-videos" | "commercials";
@@ -27,6 +27,9 @@ const STATIC_ADVANCE_DELAY = 5000; // ms for slides with no playable video
 const DOT_HIT_SIZE = 28;
 const DOT_MAGNET_RADIUS = 62;
 const SECTION_FADE_MS = 350;
+const SCROLL_PIXELS_PER_STOP = 760;
+const SCROLL_SETTLE_MS = 90;
+const SCROLL_COMMIT_FRACTION = 0.05;
 
 const isCampaign = (p: Project) => p.videos.length > 0;
 const isCommercial = (p: Project) => p.projectType === "commercial";
@@ -46,6 +49,16 @@ export default function ProjectSlideshow({
   const [workSection, setWorkSection] = useState<WorkSection>("music-videos");
   const [activeIndex, setActiveIndex] = useState(0);
   const [cutIndex, setCutIndex] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [wheelBlend, setWheelBlend] = useState<{
+    from: number;
+    to: number;
+    progress: number;
+  } | null>(null);
+  const [wheelActive, setWheelActive] = useState(false);
+  const [hashReady, setHashReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const finishLoading = useCallback(() => setIsLoading(false), []);
   const [deckFading, setDeckFading] = useState(false);
   const [unlockedProjects, setUnlockedProjects] = useState<string[]>([]);
   const [passwordInput, setPasswordInput] = useState("");
@@ -59,6 +72,14 @@ export default function ProjectSlideshow({
   const railScrubbingRef = useRef(false);
   const railClickSuppressedRef = useRef(false);
   const userNavRef = useRef(false);
+  const scrollPositionRef = useRef(0);
+  const wheelActiveRef = useRef(false);
+  const wheelSettleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wheelGestureRef = useRef<{
+    from: number;
+    axis: "horizontal" | "vertical";
+    distance: number;
+  } | null>(null);
 
   // Custom cursor state
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
@@ -93,6 +114,45 @@ export default function ProjectSlideshow({
     [filmProjects]
   );
   const deck = workSection === "commercials" ? commercialProjects : musicVideoProjects;
+  const stops = useMemo(
+    () => deck.flatMap((project, projectIndex) =>
+      Array.from({ length: Math.max(1, project.videos.length) }, (_, cut) => ({
+        projectIndex,
+        cutIndex: cut,
+      }))
+    ),
+    [deck]
+  );
+  const displayedStops = wheelActive && wheelBlend
+    ? [
+        { stop: stops[wheelBlend.from], weight: 1 - wheelBlend.progress },
+        { stop: stops[wheelBlend.to], weight: wheelBlend.progress },
+      ]
+    : [
+        { stop: stops[Math.floor(scrollPosition)], weight: 1 - (scrollPosition % 1) },
+        { stop: stops[Math.ceil(scrollPosition)], weight: scrollPosition % 1 },
+      ];
+  const lowerVisibleProjectIndex = Math.min(
+    ...displayedStops
+      .filter((item) => item.stop && item.weight > 0)
+      .map((item) => item.stop!.projectIndex)
+  );
+  const projectOpacity = (projectIndex: number) =>
+    displayedStops.reduce(
+      (opacity, item) => opacity + (item.stop?.projectIndex === projectIndex ? item.weight : 0),
+      0
+    );
+  const layerOpacity = (projectIndex: number) => {
+    const weight = projectOpacity(projectIndex);
+    return weight > 0 && projectIndex === lowerVisibleProjectIndex ? 1 : weight;
+  };
+  const cutPositionFor = (projectIndex: number) => {
+    const matches = displayedStops.filter((item) => item.stop?.projectIndex === projectIndex);
+    const weight = matches.reduce((sum, item) => sum + item.weight, 0);
+    return weight > 0
+      ? matches.reduce((sum, item) => sum + item.stop!.cutIndex * item.weight, 0) / weight
+      : 0;
+  };
   const current = deck[activeIndex];
   const currentIsCampaign = current ? isCampaign(current) : false;
   const currentIsProtected = Boolean(
@@ -113,11 +173,67 @@ export default function ProjectSlideshow({
   const deckRef = useRef(deck);
   deckRef.current = deck;
 
-  // Reset cut + user override when the slide or section changes
+  // A new section starts on its first project.
   useEffect(() => {
     setCutIndex(0);
     userNavRef.current = false;
-  }, [activeIndex, workSection]);
+  }, [workSection]);
+
+  useEffect(() => {
+    if (wheelActiveRef.current) return;
+    const index = stops.findIndex(
+      (stop) => stop.projectIndex === activeIndex && stop.cutIndex === cutIndex
+    );
+    if (index < 0) return;
+    scrollPositionRef.current = index;
+    setScrollPosition(index);
+  }, [activeIndex, cutIndex, stops]);
+
+  // Project hashes open the matching slide, including projects in Commercials.
+  useEffect(() => {
+    const openHash = () => {
+      const hash = decodeURIComponent(window.location.hash.slice(1)).toLowerCase();
+      const project = projects.find((item) =>
+        item.slug === hash || (hash === "apple" && item.title.toLowerCase().startsWith("apple"))
+      );
+      if (project) {
+        if (wheelSettleTimer.current) clearTimeout(wheelSettleTimer.current);
+        wheelGestureRef.current = null;
+        wheelActiveRef.current = false;
+        setWheelActive(false);
+        setWheelBlend(null);
+        const section = isCommercial(project) ? "commercials" : "music-videos";
+        const sectionDeck = section === "commercials" ? commercialProjects : musicVideoProjects;
+        const index = sectionDeck.findIndex((item) => item.slug === project.slug);
+        if (index >= 0) {
+          setFocusedProject(null);
+          setWorkSection(section);
+          setActiveIndex(index);
+          setCutIndex(0);
+        } else {
+          setFocusedCutIndex(0);
+          setFocusedProject(project);
+        }
+      }
+      setHashReady(true);
+    };
+    openHash();
+    window.addEventListener("hashchange", openHash);
+    window.addEventListener("popstate", openHash);
+    return () => {
+      window.removeEventListener("hashchange", openHash);
+      window.removeEventListener("popstate", openHash);
+    };
+  }, [projects, commercialProjects, musicVideoProjects]);
+
+  useEffect(() => {
+    if (!hashReady || wheelActive || focusedProject || !current) return;
+    if (!window.location.hash && activeIndex === 0 && workSection === "music-videos") return;
+    const hash = current.title.toLowerCase().startsWith("apple") ? "apple" : current.slug;
+    if (window.location.hash !== `#${hash}`) {
+      window.history.pushState(null, "", `#${hash}`);
+    }
+  }, [hashReady, wheelActive, focusedProject, current, activeIndex, workSection]);
 
   useEffect(() => {
     setPasswordInput("");
@@ -143,18 +259,18 @@ export default function ProjectSlideshow({
 
   // ─── Auto-advance (video-driven): called when a slide video fade-in completes ───
   const scheduleAutoAdvance = useCallback(() => {
+    if (isLoading) return;
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
     autoAdvanceTimer.current = setTimeout(() => {
       if (locked.current) return;
       locked.current = true;
-      setActiveIndex((prev) =>
-        prev + 1 < deckRef.current.length ? prev + 1 : 0
-      );
+      setActiveIndex((prev) => prev + 1 < deckRef.current.length ? prev + 1 : 0);
+      setCutIndex(0);
       setTimeout(() => {
         locked.current = false;
       }, 1100);
     }, AUTO_ADVANCE_DELAY);
-  }, []);
+  }, [isLoading]);
 
   const clearAutoAdvance = useCallback(() => {
     if (autoAdvanceTimer.current) {
@@ -170,7 +286,7 @@ export default function ProjectSlideshow({
 
   // ─── Auto-advance (timer-driven): campaigns and placeholder slides ───
   useEffect(() => {
-    if (isPhotos || focusedProject || deckFading || currentIsProtected) return;
+    if (isLoading || isPhotos || focusedProject || deckFading || currentIsProtected) return;
     const slide = deck[activeIndex];
     if (!slide) return;
     // Slides with a single preview video are handled by scheduleAutoAdvance
@@ -187,6 +303,7 @@ export default function ProjectSlideshow({
         setActiveIndex((prev) =>
           prev + 1 < deckRef.current.length ? prev + 1 : 0
         );
+        setCutIndex(0);
       }
     }, delay);
     return () => clearTimeout(timer);
@@ -198,6 +315,7 @@ export default function ProjectSlideshow({
     focusedProject,
     deckFading,
     currentIsProtected,
+    isLoading,
   ]);
 
   // ─── Navigation ───
@@ -207,7 +325,9 @@ export default function ProjectSlideshow({
       const next = activeIndexRef.current + direction;
       if (next < 0 || next >= deckRef.current.length) return;
       locked.current = true;
+      userNavRef.current = false;
       setActiveIndex(next);
+      setCutIndex(0);
       setTimeout(() => {
         locked.current = false;
       }, 1100);
@@ -215,13 +335,12 @@ export default function ProjectSlideshow({
     [isPhotos]
   );
 
-  // Unified step: one gesture drives everything. On a campaign slide each
-  // step moves one cut; past the ends it flows on to the adjacent project.
+  // Vertical navigation changes projects; horizontal navigation changes cuts.
   const step = useCallback(
-    (direction: 1 | -1) => {
+    (direction: 1 | -1, axis: "vertical" | "horizontal") => {
       if (locked.current || isPhotos) return;
       const slide = deckRef.current[activeIndexRef.current];
-      if (slide && slide.videos.length > 0) {
+      if (axis === "horizontal" && slide && slide.videos.length > 0) {
         const next = cutIndexRef.current + direction;
         if (next >= 0 && next < slide.videos.length) {
           userNavRef.current = true;
@@ -230,16 +349,13 @@ export default function ProjectSlideshow({
           setTimeout(() => {
             locked.current = false;
           }, 550);
-          return;
         }
+        return;
       }
       advance(direction);
     },
     [advance, isPhotos]
   );
-  const stepRef = useRef(step);
-  stepRef.current = step;
-
   const selectCut = useCallback((i: number) => {
     userNavRef.current = true;
     setCutIndex(i);
@@ -258,7 +374,9 @@ export default function ProjectSlideshow({
       autoAdvanceTimer.current = null;
     }
     locked.current = false;
+    userNavRef.current = false;
     setActiveIndex(i);
+    setCutIndex(0);
   }, []);
 
   // ─── Section switching (crossfade) ───
@@ -267,6 +385,11 @@ export default function ProjectSlideshow({
       if (next === workSection || deckFading) return;
       if (next === "commercials" && commercialProjects.length === 0) return;
       clearAutoAdvance();
+      if (wheelSettleTimer.current) clearTimeout(wheelSettleTimer.current);
+      wheelGestureRef.current = null;
+      wheelActiveRef.current = false;
+      setWheelActive(false);
+      setWheelBlend(null);
       setDeckFading(true);
       window.setTimeout(() => {
         setWorkSection(next);
@@ -350,42 +473,83 @@ export default function ProjectSlideshow({
     [activeIndex, deck.length, railCursorY]
   );
 
-  // ─── Mouse wheel: one axis — steps cuts inside campaigns, projects otherwise ───
+  // ─── Vertical changes projects; horizontal scrubs cuts on portrait campaigns ───
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    let accumulated = 0;
-    let decayTimer: ReturnType<typeof setTimeout> | null = null;
-    const THRESHOLD = 50; // px of scroll delta needed to trigger a step
-
     const onWheel = (e: WheelEvent) => {
-      if (mediaFilter === "photography") return;
+      if (mediaFilter === "photography" || focusedProject || deckFading || stops.length < 2) return;
+      if (!container.contains(e.target as Node)) return;
       e.preventDefault();
-      if (locked.current) return;
-
-      // Use the dominant axis so trackpad horizontal swipes work too
-      const delta =
-        Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-
-      accumulated += delta;
-      if (decayTimer) clearTimeout(decayTimer);
-      decayTimer = setTimeout(() => {
-        accumulated = 0;
-      }, 200);
-
-      if (Math.abs(accumulated) < THRESHOLD) return;
-
-      const dir = accumulated > 0 ? 1 : -1;
-      accumulated = 0;
-      stepRef.current(dir);
+      if (!e.deltaX && !e.deltaY) return;
+      // Trackpads can emit a little horizontal noise at the start of a vertical
+      // gesture. Prefer vertical input, and let it take over a horizontal start.
+      const wantsVertical = e.deltaY !== 0 &&
+        Math.abs(e.deltaY) >= Math.abs(e.deltaX) * 0.6;
+      const axis = wantsVertical ? "vertical" : "horizontal";
+      if (wheelGestureRef.current?.axis === "vertical" && axis === "horizontal") return;
+      if (!wheelGestureRef.current || (axis === "vertical" && wheelGestureRef.current.axis === "horizontal")) {
+        const from = stops.findIndex((stop) =>
+          stop.projectIndex === activeIndexRef.current && stop.cutIndex === cutIndexRef.current
+        );
+        if (from < 0) return;
+        wheelGestureRef.current = { from, axis, distance: 0 };
+      }
+      const gesture = wheelGestureRef.current;
+      const delta = gesture.axis === "horizontal" ? e.deltaX : e.deltaY;
+      if (!delta) return;
+      const pixels = e.deltaMode === 1 ? delta * 40 : e.deltaMode === 2 ? delta * window.innerHeight : delta;
+      clearAutoAdvance();
+      userNavRef.current = true;
+      locked.current = false;
+      wheelActiveRef.current = true;
+      setWheelActive(true);
+      gesture.distance = Math.max(-SCROLL_PIXELS_PER_STOP, Math.min(SCROLL_PIXELS_PER_STOP, gesture.distance + pixels));
+      const from = stops[gesture.from];
+      if (!from) return;
+      const direction = Math.sign(gesture.distance);
+      const fromProject = deck[from.projectIndex];
+      const moveCut = gesture.axis === "horizontal" && isCampaign(fromProject);
+      const target = direction === 0
+        ? gesture.from
+        : moveCut
+          ? stops.findIndex((stop) => stop.projectIndex === from.projectIndex && stop.cutIndex === from.cutIndex + direction)
+          : stops.findIndex((stop) => stop.projectIndex === from.projectIndex + direction && stop.cutIndex === 0);
+      const to = target >= 0 ? target : gesture.from;
+      const progress = to === gesture.from ? 0 : Math.abs(gesture.distance) / SCROLL_PIXELS_PER_STOP;
+      setWheelBlend({ from: gesture.from, to, progress });
+      const nearest = stops[progress >= 0.5 ? to : gesture.from];
+      if (nearest) {
+        setActiveIndex(nearest.projectIndex);
+        setCutIndex(nearest.cutIndex);
+      }
+      if (wheelSettleTimer.current) clearTimeout(wheelSettleTimer.current);
+      wheelSettleTimer.current = setTimeout(() => {
+        const settled = progress >= SCROLL_COMMIT_FRACTION ? to : gesture.from;
+        const stop = stops[settled];
+        if (stop) {
+          if (stop.projectIndex !== from.projectIndex) userNavRef.current = false;
+          scrollPositionRef.current = settled;
+          setScrollPosition(settled);
+          setActiveIndex(stop.projectIndex);
+          setCutIndex(stop.cutIndex);
+        }
+        wheelGestureRef.current = null;
+        wheelActiveRef.current = false;
+        setWheelActive(false);
+        setWheelBlend(null);
+      }, SCROLL_SETTLE_MS);
     };
 
-    container.addEventListener("wheel", onWheel, { passive: false });
-    return () => container.removeEventListener("wheel", onWheel);
-  }, [mediaFilter]);
+    window.addEventListener("wheel", onWheel, { capture: true, passive: false });
+    return () => {
+      window.removeEventListener("wheel", onWheel, true);
+      if (wheelSettleTimer.current) clearTimeout(wheelSettleTimer.current);
+    };
+  }, [mediaFilter, focusedProject, deckFading, stops, deck, clearAutoAdvance]);
 
-  // ─── Touch: swipe (either axis) = same unified step ───
+  // ─── Touch: match the wheel's project/cut axes ───
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = {
       x: e.touches[0].clientX,
@@ -394,31 +558,32 @@ export default function ProjectSlideshow({
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (isPhotos) return;
+    if (isLoading || isPhotos) return;
     const deltaX = touchStart.current.x - e.changedTouches[0].clientX;
     const deltaY = touchStart.current.y - e.changedTouches[0].clientY;
-    const delta = Math.abs(deltaY) >= Math.abs(deltaX) ? deltaY : deltaX;
+    const axis = Math.abs(deltaX) > Math.abs(deltaY) ? "horizontal" : "vertical";
+    const delta = axis === "horizontal" ? deltaX : deltaY;
     if (Math.abs(delta) > 50) {
-      step(delta > 0 ? 1 : -1);
+      step(delta > 0 ? 1 : -1, axis);
     }
   };
 
   // ─── Keyboard ───
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (isPhotos || focusedProject) return;
+      if (isLoading || isPhotos || focusedProject) return;
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
-        step(1);
+        step(1, e.key === "ArrowRight" ? "horizontal" : "vertical");
       }
       if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
-        step(-1);
+        step(-1, e.key === "ArrowLeft" ? "horizontal" : "vertical");
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [step, isPhotos, focusedProject]);
+  }, [step, isLoading, isPhotos, focusedProject]);
 
   // ─── Custom cursor tracking ───
   const onMouseMove = (e: React.MouseEvent) => {
@@ -478,14 +643,31 @@ export default function ProjectSlideshow({
     };
   }, [activeIndex, deck, isPhotos]);
 
-  const loaderSrcs = useMemo(
-    () =>
-      musicVideoProjects
-        .map((p) => p.images[0]?.src || getMuxThumbnail(p.muxPlaybackId))
-        .filter((src): src is string => Boolean(src))
-        .slice(0, 5),
-    [musicVideoProjects]
-  );
+  const loaderSrcs = useMemo(() => {
+    const ordered = focusedProject
+      ? [focusedProject, ...deck]
+      : [...deck.slice(activeIndex), ...deck.slice(0, activeIndex)];
+    const images: LoadingImage[] = [];
+    const seen = new Set<string>();
+    const add = (src: string | null | undefined, sizes: string) => {
+      if (!src || seen.has(src)) return;
+      seen.add(src);
+      images.push({ src, sizes });
+    };
+    for (const project of ordered) {
+      if (project.videos.length > 0) {
+        project.videos.forEach((video) =>
+          add(video.poster || getMuxThumbnail(video.playbackId, 720), "56.25vh")
+        );
+      } else if (project === focusedProject && !project.muxPlaybackId) {
+        project.images.forEach((image) => add(image.src, "100vw"));
+      } else {
+        add(project.images[0]?.src || getMuxThumbnail(project.muxPlaybackId), "100vw");
+      }
+      if (images.length >= 4) break;
+    }
+    return images.slice(0, 4);
+  }, [activeIndex, deck, focusedProject]);
 
   const role =
     current?.description?.replace(/<[^>]*>/g, "").trim().split("\n")[0] || "";
@@ -531,7 +713,11 @@ export default function ProjectSlideshow({
 
   return (
     <>
-      <LoadingScreen imageSrcs={loaderSrcs} />
+      <LoadingScreen
+        imageSrcs={loaderSrcs}
+        ready={hashReady}
+        onComplete={finishLoading}
+      />
       <div
         ref={containerRef}
         className={`fixed inset-0 w-full select-none ${
@@ -577,25 +763,29 @@ export default function ProjectSlideshow({
         >
           {deck.map((project, i) => {
             const isActive = i === activeIndex;
-            const isNearby = Math.abs(i - activeIndex) <= 1;
+            const isNearby = projectOpacity(i) > 0 || Math.abs(i - activeIndex) <= 1;
             if (!isNearby) return null;
 
             if (isCampaign(project)) {
               return (
                 <div
                   key={project.slug}
-                  className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out"
+                  className="absolute inset-0"
                   style={{
-                    opacity: isActive ? 1 : 0,
-                    zIndex: isActive ? 1 : 0,
-                    pointerEvents: isActive ? "auto" : "none",
+                    opacity: layerOpacity(i),
+                    transition: wheelActive ? "none" : "opacity 550ms ease-out",
+                    zIndex: i > lowerVisibleProjectIndex ? 2 : 1,
+                    pointerEvents: isActive && !wheelActive ? "auto" : "none",
                   }}
                 >
                   <CampaignRack
                     project={project}
-                    cutIndex={isActive ? cutIndex : 0}
+                    cutIndex={Math.round(cutPositionFor(i))}
+                    cutPosition={cutPositionFor(i)}
                     isActive={
                       isActive &&
+                      !isLoading &&
+                      !wheelActive &&
                       !isPhotos &&
                       !railScrubbing &&
                       !currentIsProtected
@@ -617,6 +807,8 @@ export default function ProjectSlideshow({
             const showVideo =
               AUTOPLAY_PREVIEW &&
               isActive &&
+              !isLoading &&
+              !wheelActive &&
               project.muxPlaybackId &&
               !isPhotos &&
               !railScrubbing;
@@ -624,10 +816,11 @@ export default function ProjectSlideshow({
             return (
               <div
                 key={project.slug}
-                className="absolute inset-0 transition-opacity duration-[900ms] ease-in-out"
+                className="absolute inset-0"
                 style={{
-                  opacity: isActive ? 1 : 0,
-                  zIndex: isActive ? 1 : 0,
+                  opacity: layerOpacity(i),
+                  transition: wheelActive ? "none" : "opacity 550ms ease-out",
+                  zIndex: i > lowerVisibleProjectIndex ? 2 : 1,
                 }}
               >
                 {thumb ? (
