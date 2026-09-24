@@ -78,7 +78,9 @@ export default function ProjectSlideshow({
   const wheelGestureRef = useRef<{
     from: number;
     axis: "horizontal" | "vertical";
+    mode: "cut" | "project";
     distance: number;
+    projectChanged: boolean;
   } | null>(null);
 
   // Custom cursor state
@@ -478,6 +480,14 @@ export default function ProjectSlideshow({
     const container = containerRef.current;
     if (!container) return;
 
+    const nextStopIndex = (fromIndex: number, direction: number, mode: "cut" | "project") => {
+      const from = stops[fromIndex];
+      if (!from || !direction) return fromIndex;
+      return mode === "cut"
+        ? stops.findIndex((stop) => stop.projectIndex === from.projectIndex && stop.cutIndex === from.cutIndex + direction)
+        : stops.findIndex((stop) => stop.projectIndex === from.projectIndex + direction && stop.cutIndex === 0);
+    };
+
     const onWheel = (e: WheelEvent) => {
       if (mediaFilter === "photography" || focusedProject || deckFading || stops.length < 2) return;
       if (!container.contains(e.target as Node)) return;
@@ -494,28 +504,43 @@ export default function ProjectSlideshow({
           stop.projectIndex === activeIndexRef.current && stop.cutIndex === cutIndexRef.current
         );
         if (from < 0) return;
-        wheelGestureRef.current = { from, axis, distance: 0 };
+        wheelGestureRef.current = {
+          from,
+          axis,
+          mode: axis === "horizontal" && isCampaign(deck[stops[from].projectIndex]) ? "cut" : "project",
+          distance: 0,
+          projectChanged: false,
+        };
       }
       const gesture = wheelGestureRef.current;
       const delta = gesture.axis === "horizontal" ? e.deltaX : e.deltaY;
       if (!delta) return;
-      const pixels = e.deltaMode === 1 ? delta * 40 : e.deltaMode === 2 ? delta * window.innerHeight : delta;
+      const rawPixels = e.deltaMode === 1 ? delta * 40 : e.deltaMode === 2 ? delta * window.innerHeight : delta;
+      const pixels = Math.max(-SCROLL_PIXELS_PER_STOP, Math.min(SCROLL_PIXELS_PER_STOP, rawPixels));
       clearAutoAdvance();
       userNavRef.current = true;
       locked.current = false;
       wheelActiveRef.current = true;
       setWheelActive(true);
-      gesture.distance = Math.max(-SCROLL_PIXELS_PER_STOP, Math.min(SCROLL_PIXELS_PER_STOP, gesture.distance + pixels));
-      const from = stops[gesture.from];
-      if (!from) return;
+      gesture.distance += pixels;
+      // Carry extra distance into the next stop instead of absorbing it while
+      // a poster waits for its video preview.
+      while (Math.abs(gesture.distance) >= SCROLL_PIXELS_PER_STOP) {
+        const direction = Math.sign(gesture.distance);
+        const next = nextStopIndex(gesture.from, direction, gesture.mode);
+        if (next < 0) {
+          gesture.distance = 0;
+          break;
+        }
+        if (stops[next].projectIndex !== stops[gesture.from].projectIndex) {
+          gesture.projectChanged = true;
+        }
+        gesture.from = next;
+        gesture.distance -= direction * SCROLL_PIXELS_PER_STOP;
+        scrollPositionRef.current = next;
+      }
       const direction = Math.sign(gesture.distance);
-      const fromProject = deck[from.projectIndex];
-      const moveCut = gesture.axis === "horizontal" && isCampaign(fromProject);
-      const target = direction === 0
-        ? gesture.from
-        : moveCut
-          ? stops.findIndex((stop) => stop.projectIndex === from.projectIndex && stop.cutIndex === from.cutIndex + direction)
-          : stops.findIndex((stop) => stop.projectIndex === from.projectIndex + direction && stop.cutIndex === 0);
+      const target = nextStopIndex(gesture.from, direction, gesture.mode);
       const to = target >= 0 ? target : gesture.from;
       const progress = to === gesture.from ? 0 : Math.abs(gesture.distance) / SCROLL_PIXELS_PER_STOP;
       setWheelBlend({ from: gesture.from, to, progress });
@@ -529,7 +554,9 @@ export default function ProjectSlideshow({
         const settled = progress >= SCROLL_COMMIT_FRACTION ? to : gesture.from;
         const stop = stops[settled];
         if (stop) {
-          if (stop.projectIndex !== from.projectIndex) userNavRef.current = false;
+          if (gesture.projectChanged || stop.projectIndex !== stops[gesture.from].projectIndex) {
+            userNavRef.current = false;
+          }
           scrollPositionRef.current = settled;
           setScrollPosition(settled);
           setActiveIndex(stop.projectIndex);
