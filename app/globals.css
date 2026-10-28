@@ -181,7 +181,7 @@ mux-player::part(video) {
 
 .project-caption { left: var(--page-gutter); right: var(--page-gutter); bottom: 96px; }
 .project-title { font-size: clamp(20px, 2.2vw, 32px); line-height: 1.15; }
-.project-meta { font-size: 12px; line-height: 1.5; flex-wrap: wrap; }
+.project-meta { font-size: 15px; line-height: 1.5; flex-wrap: wrap; }
 .section-bar { padding: 0 var(--page-gutter) max(24px, env(safe-area-inset-bottom)); }
 @media (max-width: 640px), (max-height: 500px) {
   :root { --page-gutter: 20px; }

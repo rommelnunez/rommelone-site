@@ -1,3 +1,4 @@
+import { formatRole } from "@/lib/format-role";
 import Link from "next/link";
 import type { Project } from "@/lib/types";
 import { getMuxThumbnail } from "@/lib/mux";
@@ -50,8 +51,8 @@ export default function ProjectCard({
             {project.title}
           </span>
           {role && (
-            <span className="text-white/60 text-[10px] tracking-label uppercase mt-0.5">
-              {role}
+            <span className="text-white/60 text-[12.5px] tracking-normal mt-0.5">
+              {formatRole(role)}
             </span>
           )}
         </div>
@@ -63,7 +64,7 @@ export default function ProjectCard({
           {project.title}
         </span>
         {project.year && (
-          <span className="text-[10px] text-[var(--color-text-muted)] opacity-50 ml-2">
+          <span className="text-[12.5px] text-[var(--color-text-muted)] opacity-50 ml-2">
             {project.year}
           </span>
         )}

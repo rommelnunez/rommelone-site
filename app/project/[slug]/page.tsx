@@ -1,3 +1,4 @@
+import { formatRole } from "@/lib/format-role";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -70,14 +71,14 @@ export default async function ProjectPage({
         <h1 className="text-lg sm:text-xl font-normal tracking-label">
           {project.title}
         </h1>
-        <div className="flex items-center gap-4 mt-2">
+        <div className="flex flex-wrap items-center gap-4 mt-2">
           {role && (
-            <span className="text-[11px] tracking-label uppercase text-[var(--color-text-muted)]">
-              {role}
+            <span className="text-[13.75px] tracking-normal text-[var(--color-text-muted)]">
+              {formatRole(role)}
             </span>
           )}
           {project.year && settings.theme.theme_features.show_project_year && (
-            <span className="text-[11px] text-[var(--color-text-muted)] opacity-50">
+            <span className="text-[13.75px] text-[var(--color-text-muted)] opacity-50">
               {project.year}
             </span>
           )}

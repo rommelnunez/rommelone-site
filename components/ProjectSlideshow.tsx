@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRole } from "@/lib/format-role";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import type { FormEvent } from "react";
 import type { Project } from "@/lib/types";
@@ -982,11 +983,11 @@ export default function ProjectSlideshow({
                 {current.title}
               </h1>
               <div
-                className={`project-meta mt-2.5 flex items-center gap-3 uppercase tracking-label ${
+                className={`project-meta mt-2.5 flex items-center gap-3 tracking-normal ${
                   currentIsCampaign ? "campaign-chrome-muted" : "text-white/50"
                 }`}
               >
-                {role && <span>{role}</span>}
+                {role && <span>{formatRole(role)}</span>}
                 {role && current.year && <span className="opacity-40">·</span>}
                 {current.year && <span>{current.year}</span>}
               </div>
@@ -998,7 +999,7 @@ export default function ProjectSlideshow({
             <aside className="project-navigation">
               <nav aria-label="Work category" className="flex flex-col items-end gap-2 pb-4" onMouseEnter={() => setCursorOverUI(true)} onMouseLeave={() => setCursorOverUI(false)} onTouchStart={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
                 {sectionTab("music-videos", "Music videos")}
-                {sectionTab("commercials", "Commercial")}
+                {sectionTab("commercials", "Commercials")}
               </nav>
             <div
               ref={railRef}
