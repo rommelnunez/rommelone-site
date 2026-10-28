@@ -64,7 +64,7 @@ export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
             return (
               <div
                 key={project.slug}
-                className="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
+                className="absolute inset-0 flex items-center justify-center transition-[opacity,color,border-color,transform] duration-scene ease-site"
                 style={{
                   transform: `translateX(${translateX}%) scale(${scale})`,
                   zIndex,
@@ -127,7 +127,7 @@ export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
             key={i}
             onClick={() => goTo(i)}
             className={`
-              rounded-full transition-all duration-300 cursor-pointer
+              rounded-full transition-[opacity,color,border-color,transform] duration-control cursor-pointer
               ${i === activeIndex
                 ? "w-2.5 h-2.5 bg-current opacity-80"
                 : "w-1.5 h-1.5 bg-current opacity-20 hover:opacity-50"

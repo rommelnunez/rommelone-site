@@ -31,7 +31,7 @@ export default function FocusViewCarousel({
           className={`
             flex-none w-[80px] sm:w-[100px] aspect-video
             snap-start rounded overflow-hidden relative cursor-pointer
-            border transition-all duration-200
+            border transition-[opacity,color,border-color,transform] duration-control
             ${i === activeIndex
               ? "opacity-100 border-white/60"
               : "opacity-30 border-transparent hover:opacity-60"
@@ -44,7 +44,7 @@ export default function FocusViewCarousel({
             fill
             sizes="100px"
             className="object-cover"
-            revealClassName="duration-300 ease-out"
+            revealClassName="duration-control ease-site"
           />
           {item.type === "video" && (
             <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] drop-shadow-md">

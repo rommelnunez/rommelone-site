@@ -13,7 +13,7 @@ export default function DarkModeToggle() {
       title="Toggle dark mode"
     >
       <span
-        className="absolute inset-0 bg-current transition-transform duration-300"
+        className="absolute inset-0 bg-current transition-transform duration-control"
         style={{
           clipPath:
             theme === "dark"

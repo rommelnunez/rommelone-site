@@ -1,6 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --tracking-label: 0.08em;
+  --duration-control: 200ms;
+  --duration-scene: 550ms;
+  --ease-site: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 :root {
+  --motion-control: 200ms;
+  --motion-scene: 550ms;
+  --motion-ease: var(--ease-site);
+  --page-gutter: 48px;
   --color-bg: #0a0a0a;
   --color-text: #f0f0f0;
   --color-text-muted: #888888;
@@ -37,6 +48,9 @@ body {
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-synthesis: none;
+  letter-spacing: normal;
 }
 
 button,
@@ -52,7 +66,7 @@ a {
 }
 
 .site-header {
-  padding: 48px;
+  padding: var(--page-gutter);
 }
 
 @media (max-width: 640px), (max-height: 500px) {
@@ -163,4 +177,39 @@ mux-player::part(video) {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+}
+
+.project-caption { left: var(--page-gutter); right: var(--page-gutter); bottom: 96px; }
+.project-title { font-size: clamp(20px, 2.2vw, 32px); line-height: 1.15; }
+.project-meta { font-size: 12px; line-height: 1.5; flex-wrap: wrap; }
+.section-bar { padding: 0 var(--page-gutter) max(24px, env(safe-area-inset-bottom)); }
+@media (max-width: 640px), (max-height: 500px) {
+  :root { --page-gutter: 20px; }
+  .project-caption { left: max(var(--page-gutter), env(safe-area-inset-left)); right: max(var(--page-gutter), env(safe-area-inset-right)); bottom: max(96px, calc(76px + env(safe-area-inset-bottom))); }
+  .section-bar { padding-left: max(var(--page-gutter), env(safe-area-inset-left)); padding-right: max(var(--page-gutter), env(safe-area-inset-right)); }
+  .project-scrim { background: linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.28) 28%, transparent 55%, rgba(0,0,0,.3)); }
+  .project-meta { color: rgba(255,255,255,.8); }
+}
+
+@utility duration-control { transition-duration: var(--motion-control); }
+@utility duration-scene { transition-duration: var(--motion-scene); }
+
+@media (max-width: 640px) {
+  .section-bar nav { gap: 20px; }
+  .section-bar nav button { font-size: 14px; }
+  .site-header nav { gap: 16px; }
+}
+
+.project-navigation {
+  position: absolute;
+  z-index: 30;
+  right: var(--page-gutter);
+  top: max(110px, calc(50% - 290px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.project-dot-rail { margin-right: -10px; }
+@media (max-width: 640px) {
+  .project-navigation { top: max(90px, calc(50% - 290px)); }
 }

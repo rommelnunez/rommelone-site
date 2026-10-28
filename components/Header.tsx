@@ -1,5 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import localFont from "next/font/local";
+
+const wordmarkFont = localFont({
+  src: "../public/fonts/monoton.ttf",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+});
 
 interface HeaderProps {
   title: string;
@@ -25,7 +33,7 @@ export default function Header({
       {/* Left — brand */}
       <Link href="/" className="pointer-events-auto no-underline">
         <span
-          className="text-2xl sm:text-3xl font-light tracking-[0.08em] lowercase"
+          className={`${wordmarkFont.className} text-2xl sm:text-3xl font-normal tracking-normal lowercase`}
           style={{ color: "var(--page-chrome-color, #ffffff)" }}
         >
           {title.toLowerCase()}

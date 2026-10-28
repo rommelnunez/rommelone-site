@@ -9,7 +9,7 @@ type ProgressiveImageProps = ImageProps & {
 
 export default function ProgressiveImage({
   className = "",
-  revealClassName = "duration-700 ease-out",
+  revealClassName = "duration-scene ease-site",
   onLoad,
   src,
   ...props

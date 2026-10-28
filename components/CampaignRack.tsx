@@ -7,7 +7,7 @@ import ProgressiveImage from "./ProgressiveImage";
 import PlaceholderFrame from "./PlaceholderFrame";
 
 const RACK_GAP = 28;
-const RACK_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const RACK_EASE = "var(--motion-ease)";
 const FLANK_SCALE = 0.9;
 
 interface CampaignRackProps {
@@ -74,7 +74,7 @@ export default function CampaignRack({
                 aspectRatio: "9 / 16",
                 transform: `translate(-50%, -50%) translateX(calc((100% + ${RACK_GAP}px) * ${offset})) scale(${isCurrent ? 1 : FLANK_SCALE})`,
                 opacity: Math.max(0.08, 1 - Math.abs(offset) * 0.6),
-                transition: isActive ? `transform 700ms ${RACK_EASE}, opacity 700ms ${RACK_EASE}` : "none",
+                transition: isActive ? `transform var(--motion-scene) ${RACK_EASE}, opacity var(--motion-scene) ${RACK_EASE}` : "none",
                 cursor: isCurrent ? "none" : "pointer",
                 zIndex: isCurrent ? 2 : 1,
                 boxShadow: isCurrent
@@ -103,7 +103,7 @@ export default function CampaignRack({
                 <SlideVideoPreview playbackId={cut.playbackId} startTime={0} />
               )}
               {!isCurrent && (
-                <div className="absolute inset-0 bg-black/25 transition-colors duration-300 hover:bg-black/10" />
+                <div className="absolute inset-0 bg-black/25 transition-colors duration-control hover:bg-black/10" />
               )}
             </button>
           );

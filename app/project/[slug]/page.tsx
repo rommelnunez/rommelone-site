@@ -52,7 +52,7 @@ export default async function ProjectPage({
       <div className="px-6 sm:px-8 py-4">
         <Link
           href="/"
-          className="text-[11px] tracking-[0.1em] uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+          className="text-[11px] tracking-label uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
         >
           &larr; Back
         </Link>
@@ -67,12 +67,12 @@ export default async function ProjectPage({
 
       {/* Project info */}
       <header className="px-6 sm:px-8 py-8 max-w-4xl">
-        <h1 className="text-lg sm:text-xl font-semibold tracking-wide">
+        <h1 className="text-lg sm:text-xl font-normal tracking-label">
           {project.title}
         </h1>
         <div className="flex items-center gap-4 mt-2">
           {role && (
-            <span className="text-[11px] tracking-[0.1em] uppercase text-[var(--color-text-muted)]">
+            <span className="text-[11px] tracking-label uppercase text-[var(--color-text-muted)]">
               {role}
             </span>
           )}

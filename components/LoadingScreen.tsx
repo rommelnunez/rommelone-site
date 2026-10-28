@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const MIN_DISPLAY_MS = 1400; // let the signature wipe complete on the first visit
 const MAX_WAIT_MS = 15000; // avoid a permanent black screen if an image fails
-const FADE_MS = 600;
+const FADE_MS = 550;
 const READY_IMAGE_COUNT = 4;
 
 export interface LoadingImage {
@@ -69,7 +69,7 @@ export default function LoadingScreen({ imageSrcs, ready, onComplete }: LoadingS
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
       style={{
         opacity: phase === "fading" ? 0 : 1,
-        transition: `opacity ${FADE_MS}ms ease`,
+        transition: `opacity ${FADE_MS}ms var(--motion-ease)`,
         pointerEvents: phase === "fading" ? "none" : "auto",
       }}
     >

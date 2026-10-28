@@ -108,7 +108,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
       dialogRef.current?.close();
       if (onClose) onClose();
       else router.back();
-    }, 400);
+    }, 550);
   }, [router, onClose]);
 
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
     >
       <div
         className={`relative h-screen ${videoLike ? "cursor-none" : "cursor-default"}`}
-        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.5s ease-in-out" }}
+        style={{ opacity: visible ? 1 : 0, transition: "opacity var(--motion-scene) var(--motion-ease)" }}
         onMouseMove={onMouseMove}
         onMouseEnter={() => setCursorVisible(true)}
         onMouseLeave={() => setCursorVisible(false)}
@@ -228,7 +228,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
               top: cursorPos.y,
               transform: "translate(-50%, -50%)",
               opacity: uiVisible ? 1 : 0.4,
-              transition: "opacity 0.3s ease",
+              transition: "opacity var(--motion-control) var(--motion-ease)",
             }}
           >
             <div className="w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
@@ -300,7 +300,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
           onMouseLeave={() => setCursorOverUI(false)}
           style={{
             opacity: uiVisible ? 1 : 0,
-            transition: "opacity 0.5s ease",
+            transition: "opacity var(--motion-scene) var(--motion-ease)",
             pointerEvents: uiVisible ? "auto" : "none",
             cursor: "pointer",
           }}
@@ -323,7 +323,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               transform: creditsOpen ? "translateX(0)" : "translateX(100%)",
-              transition: "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)",
+              transition: "transform var(--motion-scene) var(--motion-ease)",
               pointerEvents: creditsOpen ? "auto" : "none",
               cursor: "default",
             }}
@@ -332,7 +332,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
             onMouseLeave={() => setCursorOverUI(false)}
           >
             <div style={{ padding: "96px 40px 72px" }}>
-              <h2 className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+              <h2 className="text-[10px] uppercase tracking-label text-white/40">
                 Credits
               </h2>
               <p className="mt-1.5 text-sm text-white/85">{project.title}</p>
@@ -343,7 +343,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
                       key={i}
                       className="flex items-baseline justify-between gap-6 border-b border-white/[0.06] py-2"
                     >
-                      <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                      <span className="shrink-0 text-[10px] uppercase tracking-label text-white/40">
                         {c.role}
                       </span>
                       <span className="text-right text-[13px] leading-snug text-white/85">
@@ -367,7 +367,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
           onMouseLeave={() => setCursorOverUI(false)}
           style={{
             opacity: uiVisible ? 1 : 0,
-            transition: "opacity 0.5s ease",
+            transition: "opacity var(--motion-scene) var(--motion-ease)",
             pointerEvents: uiVisible ? "auto" : "none",
             cursor: "default",
           }}
@@ -396,7 +396,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
               {showChrome && (
                 <button
                   onClick={togglePlay}
-                  className="text-white/60 hover:text-white text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors"
+                  className="text-white/60 hover:text-white text-xs tracking-label uppercase cursor-pointer transition-colors"
                 >
                   {playing ? "Pause" : "Play"}
                 </button>
@@ -407,7 +407,7 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
                     setCreditsOpen((o) => !o);
                     resetHideTimer();
                   }}
-                  className={`text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors focus:outline-none ${
+                  className={`text-xs tracking-label uppercase cursor-pointer transition-colors focus:outline-none ${
                     creditsOpen ? "text-white" : "text-white/60 hover:text-white"
                   }`}
                 >
@@ -417,8 +417,8 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
             </div>
 
             <div className="text-center">
-              <span className="text-white/40 text-xs tracking-[0.1em]">
-                <span className="font-medium text-white/60">{project.title.split(" - ")[0]}</span>
+              <span className="text-white/40 text-xs tracking-label">
+                <span className="font-normal text-white/60">{project.title.split(" - ")[0]}</span>
                 {project.title.includes(" - ") && (
                   <span className="text-white/30">
                     {" "}| {project.title.split(" - ").slice(1).join(" - ")}
@@ -431,13 +431,13 @@ export default function FocusViewModal({ project, cutIndex = 0, onClose }: Focus
               <div className="flex items-center gap-5">
                 <button
                   onClick={toggleMute}
-                  className="text-white/60 hover:text-white text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors"
+                  className="text-white/60 hover:text-white text-xs tracking-label uppercase cursor-pointer transition-colors"
                 >
                   Sound {muted ? "Off" : "On"}
                 </button>
                 <button
                   onClick={toggleFullscreen}
-                  className="text-white/60 hover:text-white text-xs tracking-[0.15em] uppercase cursor-pointer transition-colors"
+                  className="text-white/60 hover:text-white text-xs tracking-label uppercase cursor-pointer transition-colors"
                 >
                   Fullscreen
                 </button>

@@ -25,12 +25,12 @@ export default function PhotoDrawer({ projects }: PhotoDrawerProps) {
               src={thumb}
               alt={project.title}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-cover transition-transform duration-scene group-hover:scale-105"
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             />
             {/* Title on hover */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-4">
-              <span className="text-white text-sm font-light tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-control flex items-end p-4">
+              <span className="text-white text-sm font-normal tracking-label opacity-0 group-hover:opacity-100 transition-opacity duration-control">
                 {project.title}
               </span>
             </div>

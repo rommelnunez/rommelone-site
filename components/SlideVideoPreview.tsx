@@ -28,7 +28,7 @@ export default function SlideVideoPreview({
 
   return (
     <div
-      className="pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-[1500ms] ease-in"
+      className="pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-scene ease-site"
       style={{ opacity: playing ? 1 : 0 }}
     >
       <MuxPlayer
@@ -43,7 +43,7 @@ export default function SlideVideoPreview({
             hasPlayed.current = true;
             setPlaying(true);
             if (onPlaybackStarted) {
-              startedTimer.current = setTimeout(onPlaybackStarted, 1500);
+              startedTimer.current = setTimeout(onPlaybackStarted, 550);
             }
           }
         }}

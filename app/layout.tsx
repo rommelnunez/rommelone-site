@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
+import localFont from "next/font/local";
+
+const siteFont = localFont({
+  src: "../public/fonts/poppins-regular.ttf",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+});
 import ThemeProvider from "@/components/ThemeProvider";
 import Header from "@/components/Header";
 import { getSettings } from "@/lib/settings";
@@ -61,7 +68,7 @@ export default function RootLayout({
 
   return (
     <html lang={settings.i18n.site_language || "en"} suppressHydrationWarning>
-      <body className={`${GeistSans.className} min-h-screen`}>
+      <body className={`${siteFont.className} min-h-screen`}>
         <ThemeProvider>
           <Header
             title={settings.metadata.site_title}

@@ -31,17 +31,17 @@ export default function PlaceholderFrame({
       <div className="absolute inset-0 border border-white/10" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
         {typeof index === "number" && (
-          <span className="text-[clamp(2.5rem,6vh,4.5rem)] font-light leading-none text-white/25">
+          <span className="text-[clamp(2.5rem,6vh,4.5rem)] font-normal leading-none text-white/25">
             {String(index + 1).padStart(2, "0")}
           </span>
         )}
         {label && (
-          <span className="text-[10px] uppercase tracking-[0.2em] text-white/55">
+          <span className="text-[10px] uppercase tracking-label text-white/55">
             {label}
           </span>
         )}
         {sublabel && (
-          <span className="text-[9px] uppercase tracking-[0.18em] text-white/25">
+          <span className="text-[9px] uppercase tracking-label text-white/25">
             {sublabel}
           </span>
         )}

@@ -33,7 +33,7 @@ export default function ProjectCard({
           alt={project.images[0]?.caption || project.title}
           fill
           sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className="object-cover transition-transform duration-scene ease-site group-hover:scale-105"
           loading={priority ? "eager" : "lazy"}
         />
 
@@ -46,11 +46,11 @@ export default function ProjectCard({
               </div>
             </div>
           )}
-          <span className="text-white text-xs font-semibold tracking-wide leading-tight">
+          <span className="text-white text-xs font-normal tracking-label leading-tight">
             {project.title}
           </span>
           {role && (
-            <span className="text-white/60 text-[10px] tracking-[0.1em] uppercase mt-0.5">
+            <span className="text-white/60 text-[10px] tracking-label uppercase mt-0.5">
               {role}
             </span>
           )}
@@ -59,7 +59,7 @@ export default function ProjectCard({
 
       {/* Title below card — always visible */}
       <div className="mt-2 mb-1">
-        <span className="text-[11px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] transition-colors duration-300 leading-tight line-clamp-1">
+        <span className="text-[11px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] transition-colors duration-control leading-tight line-clamp-1">
           {project.title}
         </span>
         {project.year && (

@@ -23,7 +23,7 @@ export default function FilterNav({ active, onChange, counts }: FilterNavProps) 
           onClick={() => onChange(key)}
           data-active={active === key}
           className={`
-            filter-tab pb-1 cursor-pointer text-[11px] sm:text-xs tracking-[0.12em] uppercase transition-all duration-300
+            filter-tab pb-1 cursor-pointer text-[11px] sm:text-xs tracking-label uppercase transition-[opacity,color,border-color,transform] duration-control
             ${active === key
               ? "text-[var(--color-text)]"
               : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"

@@ -15,7 +15,6 @@ import LoadingScreen, { type LoadingImage } from "./LoadingScreen";
 type MediaFilter = "film" | "photography";
 type WorkSection = "music-videos" | "commercials";
 
-const EDGE_PAD = 48;
 
 // ─── Feature flags ───
 const AUTOPLAY_PREVIEW = true;
@@ -26,7 +25,7 @@ const CUT_ADVANCE_DELAY = 4200; // ms per campaign cut before auto-stepping
 const STATIC_ADVANCE_DELAY = 5000; // ms for slides with no playable video
 const DOT_HIT_SIZE = 28;
 const DOT_MAGNET_RADIUS = 62;
-const SECTION_FADE_MS = 350;
+const SECTION_FADE_MS = 550;
 const SCROLL_PIXELS_PER_STOP = 760;
 const SCROLL_SETTLE_MS = 90;
 const SCROLL_COMMIT_FRACTION = 0.05;
@@ -270,7 +269,7 @@ export default function ProjectSlideshow({
       setCutIndex(0);
       setTimeout(() => {
         locked.current = false;
-      }, 1100);
+      }, SECTION_FADE_MS);
     }, AUTO_ADVANCE_DELAY);
   }, [isLoading]);
 
@@ -332,7 +331,7 @@ export default function ProjectSlideshow({
       setCutIndex(0);
       setTimeout(() => {
         locked.current = false;
-      }, 1100);
+      }, SECTION_FADE_MS);
     },
     [isPhotos]
   );
@@ -714,7 +713,7 @@ export default function ProjectSlideshow({
         type="button"
         onClick={() => switchSection(key)}
         disabled={empty}
-        className={`flex items-baseline gap-2 text-sm sm:text-base uppercase tracking-[0.12em] transition-all duration-300 ${
+        className={`flex items-baseline gap-2 text-sm tracking-normal transition-[opacity,color,border-color,transform] duration-control ${
           active
             ? currentIsCampaign
               ? "campaign-chrome-primary"
@@ -730,7 +729,7 @@ export default function ProjectSlideshow({
       >
         <span>{label}</span>
         {empty && (
-          <span className="text-[10px] uppercase tracking-[0.1em] opacity-45">
+          <span className="text-[10px] uppercase tracking-label opacity-45">
             soon
           </span>
         )}
@@ -781,11 +780,11 @@ export default function ProjectSlideshow({
 
         {/* Background slides — always rendered, shrinks when photos open */}
         <div
-          className="relative w-full transition-all duration-700 ease-in-out"
+          className="relative w-full transition-[opacity,color,border-color,transform] duration-scene ease-site"
           style={{
             height: isPhotos ? "0" : "100dvh",
             opacity: deckFading ? 0 : 1,
-            transition: `opacity ${SECTION_FADE_MS}ms ease-in-out, height 700ms ease-in-out`,
+            transition: `opacity ${SECTION_FADE_MS}ms var(--motion-ease), height var(--motion-scene) var(--motion-ease)`,
           }}
         >
           {deck.map((project, i) => {
@@ -800,7 +799,7 @@ export default function ProjectSlideshow({
                   className="absolute inset-0"
                   style={{
                     opacity: layerOpacity(i),
-                    transition: wheelActive ? "none" : "opacity 550ms ease-out",
+                    transition: wheelActive ? "none" : "opacity var(--motion-scene) var(--motion-ease)",
                     zIndex: i > lowerVisibleProjectIndex ? 2 : 1,
                     pointerEvents: isActive && !wheelActive ? "auto" : "none",
                   }}
@@ -846,7 +845,7 @@ export default function ProjectSlideshow({
                 className="absolute inset-0"
                 style={{
                   opacity: layerOpacity(i),
-                  transition: wheelActive ? "none" : "opacity 550ms ease-out",
+                  transition: wheelActive ? "none" : "opacity var(--motion-scene) var(--motion-ease)",
                   zIndex: i > lowerVisibleProjectIndex ? 2 : 1,
                 }}
               >
@@ -858,7 +857,7 @@ export default function ProjectSlideshow({
                     className="object-cover"
                     sizes="100vw"
                     priority={i <= 1}
-                    revealClassName="duration-[900ms] ease-out"
+                    revealClassName="duration-scene ease-site"
                   />
                 ) : (
                   <PlaceholderFrame
@@ -874,13 +873,13 @@ export default function ProjectSlideshow({
                     onPlaybackStarted={scheduleAutoAdvance}
                   />
                 )}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+                <div className="project-scrim pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
               </div>
             );
           })}
 
           {!isPhotos && currentIsCampaign && (
-            <div className="campaign-mobile-scrim pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+            <div className="campaign-mobile-scrim project-scrim pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
           )}
 
           {!isPhotos && current && currentIsProtected && (
@@ -897,16 +896,16 @@ export default function ProjectSlideshow({
                 className="w-full max-w-sm text-center text-white"
                 onSubmit={handleCampaignUnlock}
               >
-                <p className="text-[10px] uppercase tracking-[0.24em] text-white/55">
+                <p className="text-[10px] uppercase tracking-label text-white/55">
                   Private campaign
                 </p>
                 <h2
                   id="campaign-password-title"
-                  className="mt-4 text-[clamp(1.55rem,3.5vw,2.4rem)] font-light leading-none tracking-[-0.03em]"
+                  className="mt-4 text-[clamp(1.55rem,3.5vw,2.4rem)] font-normal leading-none tracking-normal"
                 >
                   {current.title.split(" – ")[0]}
                 </h2>
-                <p className="mt-3 text-sm font-light tracking-[0.02em] text-white/75">
+                <p className="mt-3 text-sm font-normal tracking-normal text-white/75">
                   Enter password to view
                 </p>
                 <div className="mt-8 flex items-center border-b border-white/55">
@@ -925,7 +924,7 @@ export default function ProjectSlideshow({
                     autoFocus
                     placeholder="Password"
                     aria-describedby="campaign-password-status"
-                    className="min-w-0 flex-1 bg-transparent py-3 text-base font-light tracking-[0.04em] text-white outline-none placeholder:text-white/40"
+                    className="min-w-0 flex-1 bg-transparent py-3 text-base font-normal tracking-normal text-white outline-none placeholder:text-white/40"
                   />
                   <button
                     type="submit"
@@ -934,7 +933,7 @@ export default function ProjectSlideshow({
                   >
                     <span
                       aria-hidden="true"
-                      className="grid h-8 w-8 place-items-center rounded-full border border-current text-[18px] font-light leading-none transition-transform duration-300 group-hover:translate-x-0.5"
+                      className="grid h-8 w-8 place-items-center rounded-full border border-current text-[18px] font-normal leading-none transition-transform duration-control group-hover:translate-x-0.5"
                     >
                       →
                     </span>
@@ -942,7 +941,7 @@ export default function ProjectSlideshow({
                 </div>
                 <p
                   id="campaign-password-status"
-                  className={`mt-3 min-h-4 text-[11px] tracking-[0.08em] transition-opacity ${
+                  className={`mt-3 min-h-4 text-[11px] tracking-label transition-opacity ${
                     passwordError ? "opacity-70" : "opacity-0"
                   }`}
                   role="status"
@@ -965,13 +964,12 @@ export default function ProjectSlideshow({
           {/* Title + meta — anchored lower-left on the gradient scrim */}
           {!isPhotos && current && (
             <div
-              className={`pointer-events-none absolute z-20 ${
+              className={`project-caption pointer-events-none absolute z-20 ${
                 currentIsCampaign ? "campaign-adaptive-chrome" : ""
               }`}
-              style={{ left: EDGE_PAD, right: EDGE_PAD, bottom: 96 }}
             >
               <h1
-                className={`text-[clamp(1rem,2.2vw,2rem)] font-light leading-[1.05] tracking-[-0.02em] ${
+                className={`project-title font-normal tracking-normal ${
                   currentIsCampaign ? "campaign-chrome-primary" : "text-white/90"
                 }`}
                 style={{
@@ -984,7 +982,7 @@ export default function ProjectSlideshow({
                 {current.title}
               </h1>
               <div
-                className={`mt-2.5 flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] ${
+                className={`project-meta mt-2.5 flex items-center gap-3 uppercase tracking-label ${
                   currentIsCampaign ? "campaign-chrome-muted" : "text-white/50"
                 }`}
               >
@@ -996,14 +994,18 @@ export default function ProjectSlideshow({
           )}
 
           {/* Dot navigation rail */}
-          {!isPhotos && deck.length > 1 && (
+          {!isPhotos && (
+            <aside className="project-navigation">
+              <nav aria-label="Work category" className="flex flex-col items-end gap-2 pb-4" onMouseEnter={() => setCursorOverUI(true)} onMouseLeave={() => setCursorOverUI(false)} onTouchStart={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
+                {sectionTab("music-videos", "Music videos")}
+                {sectionTab("commercials", "Commercial")}
+              </nav>
             <div
               ref={railRef}
-              className={`absolute top-1/2 z-20 flex -translate-y-1/2 touch-none flex-col items-center py-3 ${
+              className={`project-dot-rail flex touch-none flex-col items-center ${
                 currentIsCampaign ? "campaign-adaptive-chrome" : ""
               }`}
               style={{
-                right: "clamp(16px, 4vw, 48px)",
                 cursor: railScrubbing ? "grabbing" : "grab",
               }}
               onMouseEnter={() => setCursorOverUI(true)}
@@ -1036,15 +1038,15 @@ export default function ProjectSlideshow({
                     if (railClickSuppressedRef.current) return;
                     goToRailIndex(i);
                   }}
-                  className="grid place-items-center"
+                  className="grid shrink-0 place-items-center"
                   style={{
                     width: DOT_HIT_SIZE,
-                    height: DOT_HIT_SIZE,
+                    height: `min(${DOT_HIT_SIZE}px, calc((100dvh - 220px) / ${Math.max(1, deck.length)}))`,
                   }}
                   aria-label={`Go to project ${i + 1}${isCampaign(project) ? ` (campaign, ${project.videos.length} cuts)` : ""}`}
                 >
                   <span
-                    className="block rounded-full transition-[background-color,opacity,transform] duration-200 ease-out"
+                    className="block rounded-full transition-[background-color,opacity,transform] duration-control ease-site"
                     style={{
                       width: i === activeIndex ? 7 : 5,
                       height: i === activeIndex ? 7 : 5,
@@ -1064,12 +1066,13 @@ export default function ProjectSlideshow({
                 </button>
               ))}
             </div>
+            </aside>
           )}
         </div>
 
         {/* Photo drawer — slides up when photography selected */}
         <div
-          className="w-full bg-[var(--color-bg)] transition-all duration-700 ease-in-out"
+          className="w-full bg-[var(--color-bg)] transition-[opacity,color,border-color,transform] duration-scene ease-site"
           style={{
             minHeight: isPhotos ? "100vh" : "0",
             opacity: isPhotos ? 1 : 0,
@@ -1084,15 +1087,13 @@ export default function ProjectSlideshow({
 
         {/* Bottom bar — section nav (left) + index (right) */}
         <div
-          className={`fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between ${
+          className={`section-bar fixed bottom-0 left-0 right-0 z-30 flex items-end justify-between ${
             currentIsCampaign ? "campaign-adaptive-chrome" : ""
           }`}
           onClick={(e) => e.stopPropagation()}
           onMouseEnter={() => setCursorOverUI(true)}
           onMouseLeave={() => setCursorOverUI(false)}
           style={{
-            padding: `0 24px`,
-            paddingBottom: 24,
             cursor: "default",
             background: isPhotos
               ? "linear-gradient(to top, var(--color-bg) 60%, transparent)"
@@ -1107,7 +1108,7 @@ export default function ProjectSlideshow({
                     key={f}
                     onClick={() => setMediaFilter(f)}
                     className={`
-                    cursor-pointer border-b pb-0.5 text-sm uppercase tracking-[0.12em] transition-all duration-300
+                    cursor-pointer border-b pb-0.5 text-sm uppercase tracking-label transition-[opacity,color,border-color,transform] duration-control
                     ${
                       mediaFilter === f
                         ? `${isPhotos ? "text-[var(--color-text)]" : "text-white"} ${isPhotos ? "border-[var(--color-text)]" : "border-white"}`
@@ -1120,12 +1121,7 @@ export default function ProjectSlideshow({
                 ))}
               </nav>
             )}
-            {!isPhotos && (
-              <nav className="flex items-end gap-7">
-                {sectionTab("music-videos", "Music Videos")}
-                {sectionTab("commercials", "Commercial")}
-              </nav>
-            )}
+
           </div>
 
         </div>
