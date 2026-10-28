@@ -997,7 +997,7 @@ export default function ProjectSlideshow({
           {/* Dot navigation rail */}
           {!isPhotos && (
             <aside className="project-navigation">
-              <nav aria-label="Work category" className="flex flex-col items-end gap-2 pb-4" onMouseEnter={() => setCursorOverUI(true)} onMouseLeave={() => setCursorOverUI(false)} onTouchStart={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
+              <nav aria-label="Work category" className="flex flex-col items-center gap-2 pb-4" onMouseEnter={() => setCursorOverUI(true)} onMouseLeave={() => setCursorOverUI(false)} onTouchStart={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
                 {sectionTab("music-videos", "Music videos")}
                 {sectionTab("commercials", "Commercials")}
               </nav>

@@ -207,9 +207,8 @@ mux-player::part(video) {
   top: max(110px, calc(50% - 290px));
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
 }
-.project-dot-rail { margin-right: -10px; }
 @media (max-width: 640px) {
   .project-navigation { top: max(90px, calc(50% - 290px)); }
 }
